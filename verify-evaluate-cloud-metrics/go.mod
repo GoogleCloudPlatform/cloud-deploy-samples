@@ -1,4 +1,4 @@
-module github.com/GoogleCloudPlatform/cloud-deploy-samples/verify-logging
+module github.com/GoogleCloudPlatform/cloud-deploy-samples/verify-evaluate-cloud-metrics
 
 go 1.20
 
