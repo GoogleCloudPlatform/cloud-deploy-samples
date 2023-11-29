@@ -1,5 +1,5 @@
 # Basic Deploy
-This is a basic deployment example that shows how to configure a Cloud Deploy pipeline with two phases and deploy the same manifest point to an existing image to both.
+This is a basic deployment example that shows how to configure a Cloud Deploy pipeline with two stages and deploy the same manifest point to an existing image to both.
 
 # Prerequisites 
 You will need two GKE clusters with deployment permissions granted to the default compute account inside a project with Cloud Deploy enabled.
