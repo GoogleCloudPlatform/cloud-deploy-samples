@@ -73,7 +73,6 @@ boldout "This will take approximately 10 minutes"
 COMMIT_SHA=$(git rev-parse --verify HEAD)
 
 CLOUDBUILD_YAML="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/cloudbuild.yaml"
-# TODO(plumpy): just pass the URL to the cloudbuild.yaml file in Github, once it's public
 # Using `beta` because the non-beta command won't stream the build logs
 gcloud -q beta builds submit --project="$PROJECT" --region="$REGION" \
     --substitutions=_AR_REPO_NAME=cd-custom-targets,_IMAGE_NAME=${_CT_IMAGE_NAME},COMMIT_SHA="${COMMIT_SHA}" \
