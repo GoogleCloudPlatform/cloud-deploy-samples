@@ -46,6 +46,7 @@ func (d *deployer) process(ctx context.Context) error {
 			FailureMessage: err.Error(),
 			Metadata: map[string]string{
 				clouddeploy.CustomTargetSourceMetadataKey: tfDeployerSampleName,
+				"custom-target-source-commit-sha":         clouddeploy.GitCommit,
 			},
 		}
 		fmt.Println("Uploading failed deploy results")
@@ -121,6 +122,7 @@ func (d *deployer) deploy(ctx context.Context) (*clouddeploy.DeployResult, error
 	// Metadata consists of the Terraform output values and an indicator that the deploy was handled by the
 	// cloud deploy terraform sample.
 	metadata[clouddeploy.CustomTargetSourceMetadataKey] = tfDeployerSampleName
+	metadata["custom-target-source-commit-sha"] = clouddeploy.GitCommit
 
 	deployResult := &clouddeploy.DeployResult{
 		ResultStatus:  clouddeploy.DeploySucceeded,
