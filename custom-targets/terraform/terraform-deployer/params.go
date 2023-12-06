@@ -21,7 +21,8 @@ import (
 )
 
 // Environment variable keys whose values determine the behavior of the Terraform deployer.
-// These are set as deploy parameters in Cloud Deploy.
+// Cloud Deploy transforms a deploy parameter "customTarget/tfBackendBucket" into an
+// environment variable of the form "CLOUD_DEPLOY_customTarget_tfBackendBucket".
 const (
 	backendBucketEnvKey    = "CLOUD_DEPLOY_customTarget_tfBackendBucket"
 	backendPrefixEnvKey    = "CLOUD_DEPLOY_customTarget_tfBackendPrefix"

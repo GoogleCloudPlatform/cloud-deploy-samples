@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-module github.com/mattsanta/cd-private-samples/custom-targets/terraform/terraform-deployer
+module github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/terraform/terraform-deployer
 
 go 1.21.0
 
