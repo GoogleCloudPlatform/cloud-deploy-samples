@@ -29,6 +29,7 @@ import (
 	"strings"
 
 	"cloud.google.com/go/storage"
+	"github.com/mholt/archiver/v3"
 )
 
 // GitCommit SHA to be set during build time of the binary.
