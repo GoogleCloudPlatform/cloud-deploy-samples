@@ -2,6 +2,11 @@
 This directory contains a sample implementation of a Cloud Deploy Custom Target for deploying Google
 Cloud infrastructure resources using Terraform.
 
+**This is not an officially supported Google product, and it is not covered by a
+Google Cloud support contract. To report bugs or request features in a Google
+Cloud product, please contact [Google Cloud
+support](https://cloud.google.com/support).**
+
 # Quickstart
 
 A quickstart that uses this sample is available [here](./quickstart/QUICKSTART.md).
