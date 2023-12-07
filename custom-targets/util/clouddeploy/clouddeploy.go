@@ -35,6 +35,14 @@ import (
 // GitCommit SHA to be set during build time of the binary.
 var GitCommit = "unknown"
 
+const (
+	// cloudDeployPrefix is the prefix for environment variables containing information about the deployment
+	cloudDeployPrefix = "CLOUD_DEPLOY_"
+
+	// cloudDeployCustomTargetPrefix is the prefix for deploy parameters that are supported or required by the custom target.
+	cloudDeployCustomTargetPrefix = "CLOUD_DEPLOY_customTarget_"
+)
+
 // Cloud Deploy environment variable keys.
 const (
 	RequestTypeEnvKey        = "CLOUD_DEPLOY_REQUEST_TYPE"
@@ -491,4 +499,32 @@ func parseGCSURI(uri string) (gcsObjectURI, error) {
 		return gcsObjectURI{}, errors.New("object name is empty")
 	}
 	return obj, nil
+}
+
+// transformAndValidateEnvkey checks if the environment variable is a valid deploy parameter
+// and transforms the environment variable key back to the original format.
+func transformAndValidateEnvkey(key string) (bool, string) {
+	if strings.HasPrefix(key, cloudDeployCustomTargetPrefix) {
+		transformedKey := strings.TrimPrefix(key, cloudDeployCustomTargetPrefix)
+		transformedKey = fmt.Sprintf("customTarget/%s", transformedKey)
+		return true, transformedKey
+	} else if strings.HasPrefix(key, cloudDeployPrefix) {
+		return false, ""
+	} else {
+		return true, key
+	}
+}
+
+// FetchCloudDeployParameters returns a  map of all environment variables and keys
+// that can be used in template parameterization.
+func FetchCloudDeployParameters() map[string]string {
+	params := map[string]string{}
+	environs := os.Environ()
+	for _, environ := range environs {
+		segments := strings.Split(environ, "=")
+		if validKey, transformedKey := transformAndValidateEnvkey(segments[0]); validKey {
+			params[transformedKey] = segments[1]
+		}
+	}
+	return params
 }

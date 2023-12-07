@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// ApplySetters applies the setter values to the resource fields which are tagged
+// by the setter reference comments
 package applysetters
 
 import (
