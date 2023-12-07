@@ -1,0 +1,19 @@
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: vertex-ai-cloud-deploy-pipeline
+serialPipeline:
+  stages:
+  - targetId: prod-endpoint
+
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: prod-endpoint
+customTarget:
+  customTargetType: vertex-ai-endpoint
+deployParameters:
+  vertexAIEndpoint: projects/$PROJECT_ID/locations/$REGION/endpoints/$ENDPOINT_ID
+  vertexAIConfigPath: "prod"
+  vertexAIMinReplicaCount: "3"
