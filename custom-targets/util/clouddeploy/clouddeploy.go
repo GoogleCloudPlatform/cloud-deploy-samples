@@ -35,14 +35,6 @@ import (
 // GitCommit SHA to be set during build time of the binary.
 var GitCommit = "unknown"
 
-const (
-	// cloudDeployPrefix is the prefix for environment variables containing information about the deployment
-	cloudDeployPrefix = "CLOUD_DEPLOY_"
-
-	// cloudDeployCustomTargetPrefix is the prefix for deploy parameters that are supported or required by the custom target.
-	cloudDeployCustomTargetPrefix = "CLOUD_DEPLOY_customTarget_"
-)
-
 // Cloud Deploy environment variable keys.
 const (
 	RequestTypeEnvKey        = "CLOUD_DEPLOY_REQUEST_TYPE"
@@ -68,6 +60,12 @@ const (
 const (
 	// The Cloud Storage object suffix for the expected results file.
 	resultObjectSuffix = "results.json"
+
+	// cloudDeployEnvVarPrefix is the prefix for cloud deploy environment variables
+	cloudDeployEnvVarPrefix = "CLOUD_DEPLOY_"
+
+	// cloudDeployCustomTargetPrefix is the prefix for deploy parameters that are prefix for deploy parameters that are configured in the "customTarget/" namespace..
+	cloudDeployCustomTargetPrefix = "CLOUD_DEPLOY_customTarget_"
 )
 
 // RenderRequest contains the Cloud Deploy values passed into the execution environment for a render operation.
@@ -125,11 +123,6 @@ const (
 	RenderSucceeded    RenderStatus = "SUCCEEDED"
 	RenderFailed       RenderStatus = "FAILED"
 	RenderNotSupported RenderStatus = "NOT_SUPPORTED"
-)
-
-// Cloud Deploy known result metadata keys.
-const (
-	CustomTargetSourceMetadataKey = "custom-target-source"
 )
 
 // DownloadAndUnarchiveInput downloads the release archive and unarchives it to the provided path.
@@ -501,28 +494,27 @@ func parseGCSURI(uri string) (gcsObjectURI, error) {
 	return obj, nil
 }
 
-// transformAndValidateEnvkey checks if the environment variable is a valid deploy parameter
-// and transforms the environment variable key back to the original format.
-func transformAndValidateEnvkey(key string) (bool, string) {
+// isDeployParamAndKey determines if the provided env var key corresponds
+// to a deploy parameter, if it is then it returns the deploy parameter key.
+func isDeployParamAndKey(key string) (bool, string) {
 	if strings.HasPrefix(key, cloudDeployCustomTargetPrefix) {
 		transformedKey := strings.TrimPrefix(key, cloudDeployCustomTargetPrefix)
 		transformedKey = fmt.Sprintf("customTarget/%s", transformedKey)
 		return true, transformedKey
-	} else if strings.HasPrefix(key, cloudDeployPrefix) {
+	} else if strings.HasPrefix(key, cloudDeployEnvVarPrefix) {
 		return false, ""
 	} else {
 		return true, key
 	}
 }
 
-// FetchCloudDeployParameters returns a  map of all environment variables and keys
-// that can be used in template parameterization.
-func FetchCloudDeployParameters() map[string]string {
+// FetchDeployParameters returns a  map of all the deploy parameters provided in the execution environment
+func FetchDeployParameters() map[string]string {
 	params := map[string]string{}
 	environs := os.Environ()
 	for _, environ := range environs {
 		segments := strings.Split(environ, "=")
-		if validKey, transformedKey := transformAndValidateEnvkey(segments[0]); validKey {
+		if validKey, transformedKey := isDeployParamAndKey(segments[0]); validKey {
 			params[transformedKey] = segments[1]
 		}
 	}
