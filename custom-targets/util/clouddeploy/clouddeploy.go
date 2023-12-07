@@ -127,8 +127,8 @@ const (
 
 // Cloud Deploy known result metadata keys.
 const (
-	CustomTargetSourceMetadataKey = "custom-target-source"
-	CustomTargetCommitSha         = "custom-target-source-commit-sha"
+	CustomTargetSourceMetadataKey    = "custom-target-source"
+	CustomTargetSourceSHAMetadataKey = "custom-target-source-commit-sha"
 )
 
 // DownloadAndUnarchiveInput downloads the release archive and unarchives it to the provided path.
