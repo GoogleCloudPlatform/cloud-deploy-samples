@@ -1,6 +1,6 @@
 // Package applysetters is an interface for Skaffold's applysetters package
 // to apply kpt-style param transformations for a yaml config file with the
-// with the parameters provided as key value pairs.
+// parameters provided as key value pairs.
 package applysetters
 
 import (
@@ -25,13 +25,11 @@ func ApplyParams(filePath string, params map[string]string) error {
 		MatchFilesGlob: []string{fileName},
 	}
 
-	err := kio.Pipeline{
+	return kio.Pipeline{
 		Inputs:  []kio.Reader{inout},
 		Filters: []kio.Filter{s},
 		Outputs: []kio.Writer{inout},
 	}.Execute()
-
-	return err
 }
 
 // addSetters populates the setter struct with key values provided in params
