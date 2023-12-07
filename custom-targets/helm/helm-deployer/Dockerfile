@@ -12,30 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.21
+ARG GCLOUD_VERSION=440.0.0
+ARG GO_VERSION=1.21
+ARG HELM_VERSION=3.13.0
 
+FROM golang:${GO_VERSION} AS go-build
+ARG COMMIT_SHA=unknown
 WORKDIR /app
 COPY go.mod go.sum ./
 COPY *.go ./
-COPY clouddeploy/go.mod ./clouddeploy/
-COPY clouddeploy/*.go ./clouddeploy/
 RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -o /helm-deployer
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy.GitCommit=${COMMIT_SHA}" -o /helm-deployer
 
-#Setup Gcloud (Including gke auth, kubectl and docker-credential-gcr)
-RUN curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-440.0.0-linux-x86_64.tar.gz
-RUN tar -xf google-cloud-cli-440.0.0-linux-x86_64.tar.gz
-RUN google-cloud-sdk/install.sh --quiet --additional-components gke-gcloud-auth-plugin kubectl docker-credential-gcr
-RUN ln -s /app/google-cloud-sdk/bin/gcloud /bin/gcloud 
-RUN ln -s /app/google-cloud-sdk/bin/gsutil /bin/gsutil 
-RUN ln -s /app/google-cloud-sdk/bin/docker-credential-gcloud /bin/docker-credential-gcloud
-RUN ln -s /app/google-cloud-sdk/bin/kubectl /bin/kubectl
-RUN ln -s /app/google-cloud-sdk/bin/gke-gcloud-auth-plugin /bin/gke-gcloud-auth-plugin
+FROM debian:stable-slim AS dependencies
+ARG HELM_VERSION
+RUN apt-get update -y && apt-get install unzip wget -y
+RUN wget -q https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz
+RUN tar xvzf helm-v${HELM_VERSION}-linux-amd64.tar.gz linux-amd64/helm
 
-#Setup Helm
-RUN curl -O https://get.helm.sh/helm-v3.13.0-linux-amd64.tar.gz
-RUN mkdir helm
-RUN tar -xf helm-v3.13.0-linux-amd64.tar.gz -C helm
-RUN ln -s /app/helm/linux-amd64/helm /bin/helm 
+FROM  gcr.io/google.com/cloudsdktool/google-cloud-cli:${GCLOUD_VERSION} AS release
+COPY --from=go-build /helm-deployer /bin/helm-deployer
+COPY --from=dependencies /linux-amd64/helm /bin/helm
 
-CMD ["/helm-deployer"]
+CMD ["/bin/helm-deployer"]
