@@ -60,6 +60,12 @@ const (
 const (
 	// The Cloud Storage object suffix for the expected results file.
 	resultObjectSuffix = "results.json"
+
+	// cloudDeployEnvVarPrefix is the prefix for cloud deploy environment variables.
+	cloudDeployEnvVarPrefix = "CLOUD_DEPLOY_"
+
+	// cloudDeployCustomTargetEnvVarPrefix is the prefix for environment variables that represent deploy parameters configured in the "customTarget/" namespace.
+	cloudDeployCustomTargetEnvVarPrefix = "CLOUD_DEPLOY_customTarget_"
 )
 
 // RenderRequest contains the Cloud Deploy values passed into the execution environment for a render operation.
@@ -121,7 +127,8 @@ const (
 
 // Cloud Deploy known result metadata keys.
 const (
-	CustomTargetSourceMetadataKey = "custom-target-source"
+	CustomTargetSourceMetadataKey    = "custom-target-source"
+	CustomTargetSourceSHAMetadataKey = "custom-target-source-commit-sha"
 )
 
 // DownloadAndUnarchiveInput downloads the release archive and unarchives it to the provided path.
@@ -491,4 +498,31 @@ func parseGCSURI(uri string) (gcsObjectURI, error) {
 		return gcsObjectURI{}, errors.New("object name is empty")
 	}
 	return obj, nil
+}
+
+// isDeployParamAndKey determines if the provided env var key corresponds
+// to a deploy parameter, if it is then it returns the deploy parameter key.
+func isDeployParamAndKey(key string) (bool, string) {
+	if strings.HasPrefix(key, cloudDeployCustomTargetEnvVarPrefix) {
+		transformedKey := strings.TrimPrefix(key, cloudDeployCustomTargetEnvVarPrefix)
+		transformedKey = fmt.Sprintf("customTarget/%s", transformedKey)
+		return true, transformedKey
+	} else if strings.HasPrefix(key, cloudDeployEnvVarPrefix) {
+		return false, ""
+	} else {
+		return true, key
+	}
+}
+
+// FetchDeployParameters returns a map of all the deploy parameters provided in the execution environment.
+func FetchDeployParameters() map[string]string {
+	params := map[string]string{}
+	environs := os.Environ()
+	for _, environ := range environs {
+		segments := strings.Split(environ, "=")
+		if validKey, transformedKey := isDeployParamAndKey(segments[0]); validKey {
+			params[transformedKey] = segments[1]
+		}
+	}
+	return params
 }
