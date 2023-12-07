@@ -16,7 +16,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: [
     'build',
-    '--build-arg', 'commit_sha=$COMMIT_SHA',
+    '--build-arg', 'COMMIT_SHA=$COMMIT_SHA',
     '-t', '$LOCATION-docker.pkg.dev/$PROJECT_ID/$_AR_REPO_NAME/$_IMAGE_NAME',
     '-f', 'Dockerfile',
     '.'

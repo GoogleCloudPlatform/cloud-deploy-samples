@@ -14,16 +14,14 @@
 
 ARG GO_VERSION=1.21
 ARG TERRAFORM_VERSION=1.2.3
-# Used to include the commit SHA in the image.
-ARG commit_sha
 
 FROM golang:${GO_VERSION} AS go-build
-ENV COMMIT_SHA=$commit_sha
+ARG COMMIT_SHA=unknown
 WORKDIR /app
 COPY go.mod go.sum ./
 COPY *.go ./
 RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X https://github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy.GitCommit=$COMMIT_SHA" -o /terraform-deployer
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy.GitCommit=${COMMIT_SHA}" -o /terraform-deployer
 
 FROM debian:stable-slim AS dependencies
 ARG TERRAFORM_VERSION
