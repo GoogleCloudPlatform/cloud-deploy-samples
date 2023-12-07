@@ -64,7 +64,7 @@ const (
 	// cloudDeployEnvVarPrefix is the prefix for cloud deploy environment variables.
 	cloudDeployEnvVarPrefix = "CLOUD_DEPLOY_"
 
-	// cloudDeployCustomTargetEnvVarPrefix is the prefix for deploy parameters that are prefix for deploy parameters that are configured in the "customTarget/" namespace.
+	// cloudDeployCustomTargetEnvVarPrefix is the prefix for environment variables that represent deploy parameters configured in the "customTarget/" namespace.
 	cloudDeployCustomTargetEnvVarPrefix = "CLOUD_DEPLOY_customTarget_"
 )
 
@@ -514,7 +514,7 @@ func isDeployParamAndKey(key string) (bool, string) {
 	}
 }
 
-// FetchDeployParameters returns a  map of all the deploy parameters provided in the execution environment
+// FetchDeployParameters returns a map of all the deploy parameters provided in the execution environment.
 func FetchDeployParameters() map[string]string {
 	params := map[string]string{}
 	environs := os.Environ()
