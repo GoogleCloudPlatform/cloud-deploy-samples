@@ -117,10 +117,10 @@ The Terraform configuration is structured so the dev and prod root modules are d
 * `configuration/environments/prod`
 
 Both environment root modules have a child module defined that is sourced from `configuration/network-module`. Additionally, the
-configuratione expects `project_id` variable to be set, this is provided as a deploy parameter on the targets.
+configuration expects `project_id` variable to be set, this is provided as a deploy parameter on the targets.
 
 ## 8. Check rollout status for dev target
-In the Cloud Deploy UI for your project click on the `tf-network-pipeline` delivery pipeline. Here you can see the release created and the rollout to the dev target for the release.
+In the [Cloud Deploy UI](https://console.cloud.google.com/deploy/delivery-pipelines) for your project click on the `tf-network-pipeline` delivery pipeline. Here you can see the release created and the rollout to the dev target for the release.
 
 You can also describe the rollout created using the following command:
 
@@ -143,7 +143,7 @@ gcloud deploy releases promote --release=release-001 --delivery-pipeline=tf-netw
 ```
 
 ## 10. Check rollout status for prod target
-View the `tf-network-pipeline` delivery pipeline in the Cloud Deploy UI.
+View the `tf-network-pipeline` delivery pipeline in the [Cloud Deploy UI](https://console.cloud.google.com/deploy/delivery-pipelines).
 
 To describe the prod rollout run the following command:
 
@@ -166,16 +166,10 @@ Delete the Cloud Storage objects and buckets:
 gcloud storage rm -r gs://$PROJECT_ID-$REGION-tf-dev-backend gs://$PROJECT_ID-$REGION-tf-prod-backend
 ```
 
-Delete the dev compute network:
+Delete the compute networks:
 
 ```shell
-gcloud compute networks delete tf-ct-quickstart-dev-network --project=$PROJECT_ID
-```
-
-Delete the prod compute network:
-
-```shell
-gcloud compute networks delete tf-ct-quickstart-prod-network --project=$PROJECT_ID
+gcloud compute networks delete tf-ct-quickstart-dev-network tf-ct-quickstart-prod-network --project=$PROJECT_ID
 ```
 
 Delete the Cloud Deploy resources:

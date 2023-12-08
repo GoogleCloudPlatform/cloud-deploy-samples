@@ -18,7 +18,7 @@ go 1.21.0
 
 require (
 	cloud.google.com/go/storage v1.35.1
-	github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util v0.0.0-20231206192208-76982eaed629
+	github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util v0.0.0-20231207200055-51cc2d1597d3
 	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/hashicorp/terraform-json v0.18.0
 	github.com/mholt/archiver/v3 v3.5.1
@@ -34,7 +34,7 @@ require (
 	github.com/andybalholm/brotli v1.0.6 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
-	github.com/go-logr/logr v1.2.4 // indirect
+	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
@@ -49,13 +49,13 @@ require (
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/nwaples/rardecode v1.1.3 // indirect
-	github.com/pierrec/lz4/v4 v4.1.18 // indirect
+	github.com/pierrec/lz4/v4 v4.1.19 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.opentelemetry.io/otel v1.19.0 // indirect
-	go.opentelemetry.io/otel/metric v1.19.0 // indirect
-	go.opentelemetry.io/otel/trace v1.19.0 // indirect
+	go.opentelemetry.io/otel v1.21.0 // indirect
+	go.opentelemetry.io/otel/metric v1.21.0 // indirect
+	go.opentelemetry.io/otel/trace v1.21.0 // indirect
 	golang.org/x/crypto v0.16.0 // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/oauth2 v0.15.0 // indirect
