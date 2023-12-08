@@ -42,10 +42,15 @@ func (aa aliasAssigner) process(ctx context.Context) error {
 	localManifest := "manifest.yaml"
 	fmt.Printf("Downloading deploy input manifest from %q.\n", gcsPath)
 
+	deployRequest := &clouddeploy.DeployRequest{
+		InputGCSPath:    ta.ArtifactUri,
+		ManifestGCSPath: pa.ManifestPath,
+	}
 
-	clouddeploy.
-	if _, err := clouddeploy.(ctx, aa.gcsClient, gcsPath, localManifest); err != nil {
-		return fmt.Errorf("unable to download manifest from %q: %v", gcsPath, err)
+	fmt.Printf("Downloading rendered manifest.\n")
+	if _, err := deployRequest.DownloadManifest(ctx, aa.gcsClient, localManifest); err != nil {
+		fmt.Println("Failed to download rendered manifest.")
+		return fmt.Errorf("failed to download local manifest: %v", err)
 	}
 
 	deployedModelRequest, err := deployModelFromManifest(localManifest)
