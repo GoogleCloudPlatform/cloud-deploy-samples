@@ -26,7 +26,7 @@ on the required deploy parameters provided, see section below.
 |customTarget/tfBackendPrefix| Yes | Prefix to use for the Cloud Storage objects that represent the Terraform state |
 |customTarget/tfConfigurationPath| No | Path to the Terraform configuration in the Cloud Deploy Release archive. If not provided then defaults to the root directory of the archive |
 |customTarget/tfVariablePath| No | Path to a Terraform variable definition (.tfvars) file relative to the Terraform configuration |
-|customTarget/tfEnableRenderPlan| No | Whether to generate a Terraform plan at render time for informational purposes, i.e. provide in the Cloud Deploy Release inspector. This plan is not used when deploying the configuration |
+|customTarget/tfEnableRenderPlan| No | Whether to generate a Terraform plan at render time for informational purposes, i.e. provide in the [Cloud Deploy Release inspector](https://cloud.google.com/deploy/docs/view-release#view_release_artifacts). This plan is not used when deploying the configuration |
 |customTarget/tfLockTimeout| No | Duration to retry a state lock, when unset Terraform defaults to 0s |
 |customTarget/tfApplyParallelism| No | Parallelism to set when performing terraform apply, when unset Terraform defaults to 10 |
 
@@ -63,7 +63,7 @@ The render process consists of the following steps:
 
     c. Initialize the working directory containing the Terraform configuration and validate it.
 
-3. Generate a Cloud Deploy Release inspector artifact that contains the variables in `clouddeploy.auto.tfvars` and upload it to Cloud Storage.
+3. Generate a [Cloud Deploy Release inspector](https://cloud.google.com/deploy/docs/view-release#view_release_artifacts) artifact that contains the variables in `clouddeploy.auto.tfvars` and upload it to Cloud Storage.
     
     * If deploy parameter `customTarget/tfEnableRenderPlan` is set to `true` then this artifact will also contain a speculative Terraform plan for informational purposes. This plan is **not** used when applying the Terraform configuration at deploy time.
 

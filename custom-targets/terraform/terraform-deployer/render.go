@@ -77,8 +77,8 @@ func (r *renderer) process(ctx context.Context) error {
 			ResultStatus:   clouddeploy.RenderFailed,
 			FailureMessage: err.Error(),
 			Metadata: map[string]string{
-				clouddeploy.CustomTargetSourceMetadataKey: tfDeployerSampleName,
-				"custom-target-source-commit-sha":         clouddeploy.GitCommit,
+				clouddeploy.CustomTargetSourceMetadataKey:    tfDeployerSampleName,
+				clouddeploy.CustomTargetSourceSHAMetadataKey: clouddeploy.GitCommit,
 			},
 		}
 		fmt.Println("Uploading failed render results")
@@ -191,8 +191,8 @@ func (r *renderer) render(ctx context.Context) (*clouddeploy.RenderResult, error
 		ResultStatus: clouddeploy.RenderSucceeded,
 		ManifestFile: planGCSURI,
 		Metadata: map[string]string{
-			clouddeploy.CustomTargetSourceMetadataKey: tfDeployerSampleName,
-			"custom-target-source-commit-sha":         clouddeploy.GitCommit,
+			clouddeploy.CustomTargetSourceMetadataKey:    tfDeployerSampleName,
+			clouddeploy.CustomTargetSourceSHAMetadataKey: clouddeploy.GitCommit,
 		},
 	}
 	return renderResult, nil
