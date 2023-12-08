@@ -14,6 +14,6 @@ metadata:
 customTarget:
   customTargetType: vertex-ai-endpoint
 deployParameters:
-  vertexAIEndpoint: projects/$PROJECT_ID/locations/$REGION/endpoints/$ENDPOINT_ID
+  vertexAIEndpoint: projects/angel-gcp-starter-project2/locations/us-central1/endpoints/prod
   vertexAIConfigPath: "prod"
   vertexAIMinReplicaCount: "3"

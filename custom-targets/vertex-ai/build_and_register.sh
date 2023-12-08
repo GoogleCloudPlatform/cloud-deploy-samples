@@ -9,4 +9,4 @@ export _CT_CUSTOM_ACTION_NAME=vertex-ai-model-deployer
 export _CT_GCS_DIRECTORY=vertexai
 export _CT_SKAFFOLD_CONFIG_NAME=vertexAiConfig
 
-"${SOURCE_DIR}/../clouddeploy/build_and_register.sh" "$@"
+"${SOURCE_DIR}/../util/build_and_register.sh" "$@"

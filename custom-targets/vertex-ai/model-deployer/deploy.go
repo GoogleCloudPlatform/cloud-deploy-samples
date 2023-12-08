@@ -17,7 +17,7 @@ package main
 import (
 	"context"
 	"fmt"
-	aiplatform "google.golang.org/api/aiplatform/v1beta1"
+	"google.golang.org/api/aiplatform/v1"
 	"os"
 	"strings"
 	"sync"
@@ -52,7 +52,7 @@ func (d *deployer) process(ctx context.Context) error {
 		}
 		d.addCommonMetadata(res)
 		fmt.Println("Uploading failed deploy results")
-		rURI, err := clouddeploy.UploadDeployResult(ctx, d.gcsClient, d.req.OutputGCSPath, dr)
+		rURI, err := d.req.UploadResult(ctx, d.gcsClient, dr)
 		if err != nil {
 			return fmt.Errorf("error uploading failed deploy results: %v", err)
 		}
@@ -62,7 +62,7 @@ func (d *deployer) process(ctx context.Context) error {
 	d.addCommonMetadata(res)
 
 	fmt.Println("Uploading successful deploy results")
-	rURI, err := clouddeploy.UploadDeployResult(ctx, d.gcsClient, d.req.OutputGCSPath, res)
+	rURI, err := d.req.UploadResult(ctx, d.gcsClient, res)
 	if err != nil {
 		return fmt.Errorf("error uploading deploy results: %v", err)
 	}
@@ -72,26 +72,29 @@ func (d *deployer) process(ctx context.Context) error {
 }
 
 func (d *deployer) deploy(ctx context.Context) (*clouddeploy.DeployResult, error) {
-	inManifestGCSURI := d.req.ManifestGCSPath
 	localManifest := "manifest.yaml"
-	fmt.Printf("Downloading deploy input manifest from %q.\n", inManifestGCSURI)
-	if _, err := clouddeploy.DownloadGCS(ctx, d.gcsClient, inManifestGCSURI, localManifest); err != nil {
-		return nil, fmt.Errorf("unable to download manifest from %q: %v", inManifestGCSURI, err)
+	fmt.Printf("Downloading deploy input manifest from %q.\n", d.req.ManifestGCSPath)
+
+	_, err := d.req.DownloadManifest(ctx, d.gcsClient, localManifest)
+	if err != nil {
+		return nil, fmt.Errorf("unable to download deploy input from %s: %v", d.req.ManifestGCSPath, err)
 	}
+
+	fmt.Printf("Downloaded deploy input manifest.\n")
 
 	manifestData, err := d.applyModel(ctx, localManifest)
 	if err != nil {
 		return nil, fmt.Errorf("failed to deploy model: %v", err)
 	}
 
-	manifestGCSURI := fmt.Sprintf("%s/%s", d.req.OutputGCSPath, "manifest.yaml")
-	if err := clouddeploy.UploadGCS(ctx, d.gcsClient, manifestGCSURI, manifestData); err != nil {
-		return nil, fmt.Errorf("error uploading manifest to GCS: %v", err)
+	mURI, err := d.req.UploadArtifact(ctx, d.gcsClient, "manifest.yaml", &clouddeploy.GCSUploadContent{Data: manifestData})
+	if err != nil {
+		return nil, fmt.Errorf("error uploading deploy artifact: %v", err)
 	}
 
 	return &clouddeploy.DeployResult{
 		ResultStatus:  clouddeploy.DeploySucceeded,
-		ArtifactFiles: []string{manifestGCSURI},
+		ArtifactFiles: []string{mURI},
 	}, nil
 }
 
@@ -100,7 +103,7 @@ func (d *deployer) addCommonMetadata(rs *clouddeploy.DeployResult) {
 		rs.Metadata = map[string]string{}
 	}
 	rs.Metadata[clouddeploy.CustomTargetSourceMetadataKey] = aiDeployerSampleName
-	rs.Metadata[clouddeploy.CustomTargetCommitSha] = clouddeploy.GitCommit
+	rs.Metadata[clouddeploy.CustomTargetSourceSHAMetadataKey] = clouddeploy.GitCommit
 }
 
 func deployModelFromManifest(path string) (*aiplatform.GoogleCloudAiplatformV1DeployModelRequest, error) {

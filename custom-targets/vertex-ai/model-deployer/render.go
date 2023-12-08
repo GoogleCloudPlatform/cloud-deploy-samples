@@ -17,8 +17,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/applysetters"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
-	aiplatform "google.golang.org/api/aiplatform/v1beta1"
+
+	"google.golang.org/api/aiplatform/v1"
 	"os"
 	"regexp"
 	"strings"
@@ -30,7 +32,7 @@ import (
 
 const (
 	// The default place to look for a deployed model configuration file if a specific location is not specified
-	defaultConfigPath = "source/deployedModel.yaml"
+	defaultConfigPath = "/workspace/source/deployedModel.yaml"
 
 	// Path to use when downloading the source input archive file.
 	srcArchivePath = "/workspace/archive.tgz"
@@ -95,17 +97,18 @@ func (r *renderer) render(ctx context.Context) (*clouddeploy.RenderResult, error
 		return nil, fmt.Errorf("error rendering deploy model params: %v", err)
 	}
 
-	remotePath := fmt.Sprintf("%s/%s", r.req.OutputGCSPath, "manifest.yaml")
-	fmt.Printf("Uploading deployed model manifest to %q.\n", remotePath)
+	fmt.Printf("Uploading deployed model manifest.\n")
 
-	manifestGCSURI, err := r.req.UploadArtifact(ctx, r.gcsClient, remotePath, &clouddeploy.GCSUploadContent{Data: out})
+	mURI, err := r.req.UploadArtifact(ctx, r.gcsClient, "manifest.yaml", &clouddeploy.GCSUploadContent{Data: out})
 	if err != nil {
-		return nil, fmt.Errorf("error uploading deploted model manifest: %v", err)
+		return nil, fmt.Errorf("error uploading deployed model manifest: %v", err)
 	}
+
+	fmt.Printf("Uploaded deployed model manifest to %s\n", mURI)
 
 	return &clouddeploy.RenderResult{
 		ResultStatus: clouddeploy.RenderSucceeded,
-		ManifestFile: manifestGCSURI,
+		ManifestFile: mURI,
 	}, nil
 }
 
@@ -114,7 +117,7 @@ func (r *renderer) addCommonMetadata(rs *clouddeploy.RenderResult) {
 		rs.Metadata = map[string]string{}
 	}
 	rs.Metadata[clouddeploy.CustomTargetSourceMetadataKey] = aiDeployerSampleName
-	rs.Metadata[clouddeploy.] = clouddeploy.GitCommit
+	rs.Metadata[clouddeploy.CustomTargetSourceSHAMetadataKey] = clouddeploy.GitCommit
 }
 
 func validateRequest(modelNameFromDeployParameter, endpointName string, minReplicaCountParameter int64, deployedModel *aiplatform.GoogleCloudAiplatformV1DeployedModel) error {
@@ -256,8 +259,8 @@ func renderDeployModelRequest(ctx context.Context, configPath, endpointName, mod
 
 func applyDeployParams(configPath string) error {
 	fullPath, _ := determineConfigFileLocation(configPath)
-	deployParams := clouddeploy.FetchCloudDeployParameters()
-	return clouddeploy.ApplyParams(fullPath, deployParams)
+	deployParams := clouddeploy.FetchDeployParameters()
+	return applysetters.ApplyParams(fullPath, deployParams)
 }
 
 func resolveModelWithVersion(model *aiplatform.GoogleCloudAiplatformV1Model) string {
@@ -304,7 +307,7 @@ func determineConfigFileLocation(configRelativePath string) (string, bool) {
 	shouldErrOnMissingFile := false
 
 	if configRelativePath != "" {
-		configPath = fmt.Sprintf("source/%s/deployedModel.yaml", configRelativePath)
+		configPath = fmt.Sprintf("%s/%s/deployedModel.yaml", srcPath, configRelativePath)
 		shouldErrOnMissingFile = true
 	}
 

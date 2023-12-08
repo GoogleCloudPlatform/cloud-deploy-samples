@@ -12,20 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.21
+ARG GO_VERSION=1.21
 
-ARG commit_sha
-
-ENV COMMIT_SHA=$commit_sha
-
+FROM golang:${GO_VERSION} AS go-build
+ARG COMMIT_SHA=unknown
 WORKDIR /app
 COPY go.mod go.sum ./
-COPY ./*.go ./
-COPY clouddeploy/go.mod ./clouddeploy/
-COPY clouddeploy/*.go ./clouddeploy/
-
+COPY *.go ./
 RUN go mod download
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy.GitCommit=${COMMIT_SHA}" -o /vertex-ai-deployer
 
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy.GitCommit=$COMMIT_SHA" -o /cd-ai-deployer
+FROM gcr.io/distroless/static-debian12:latest AS release
+COPY --from=go-build /vertex-ai-deployer /bin/vertex-ai-deployer
 
-CMD ["/cd-ai-deployer"]
+CMD ["/bin/vertex-ai-deployer"]
