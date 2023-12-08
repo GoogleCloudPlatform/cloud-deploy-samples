@@ -42,8 +42,8 @@ func (d *deployer) process(ctx context.Context) error {
 			ResultStatus:   clouddeploy.DeployFailed,
 			FailureMessage: err.Error(),
 			Metadata: map[string]string{
-				clouddeploy.CustomTargetSourceMetadataKey: helmDeployerSampleName,
-				"custom-target-source-commit-sha":         clouddeploy.GitCommit,
+				clouddeploy.CustomTargetSourceMetadataKey:    helmDeployerSampleName,
+				clouddeploy.CustomTargetSourceSHAMetadataKey: clouddeploy.GitCommit,
 			},
 		}
 		fmt.Println("Uploading failed deploy results")
@@ -114,8 +114,8 @@ func (d *deployer) deploy(ctx context.Context) (*clouddeploy.DeployResult, error
 		ResultStatus:  clouddeploy.DeploySucceeded,
 		ArtifactFiles: []string{mURI},
 		Metadata: map[string]string{
-			clouddeploy.CustomTargetSourceMetadataKey: helmDeployerSampleName,
-			"custom-target-source-commit-sha":         clouddeploy.GitCommit,
+			clouddeploy.CustomTargetSourceMetadataKey:    helmDeployerSampleName,
+			clouddeploy.CustomTargetSourceSHAMetadataKey: clouddeploy.GitCommit,
 		},
 	}
 	return dr, nil

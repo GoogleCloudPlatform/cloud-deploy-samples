@@ -53,7 +53,7 @@ The render process consists of the following steps:
 
     b. If `customTarget/helmTemplateValidate` is `true` then `--validate` arg is used.
 
-4. Upload to Cloud Storage the manifest produced by `helm template` to be used as the Cloud Deploy Release inspector artifact.
+4. Upload to Cloud Storage the manifest produced by `helm template` to be used as the [Cloud Deploy Release inspector](https://cloud.google.com/deploy/docs/view-release#view_release_artifacts) artifact.
 
 5. Upload the configuration to Cloud Storage so the Helm chart is available at deploy time.
 

@@ -94,7 +94,7 @@ gcloud deploy releases create release-001 --delivery-pipeline=helm-pipeline --pr
 The Helm chart is in `configuration/mychart`. The path to the Helm chart within the `configuration` directory was configured as a deploy parameter on the pipeline stage, see the `clouddeploy.yaml` file.
 
 ## 8. Check rollout status for the target
-In the Cloud Deploy UI for your project click on the `helm-pipeline` delivery pipeline. Here you can see the release created and the rollout to the target for the release.
+In the [Cloud Deploy UI](https://console.cloud.google.com/deploy/delivery-pipelines) for your project click on the `helm-pipeline` delivery pipeline. Here you can see the release created and the rollout to the target for the release.
 
 You can also describe the rollout created using the following command:
 
