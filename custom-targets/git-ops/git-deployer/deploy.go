@@ -33,8 +33,6 @@ import (
 )
 
 const (
-	// Default committer username when not provided.
-	defaultUsername = "Cloud Deploy"
 	// Argo Application custom resource type.
 	argoCRType = "application"
 	// Argo Synced status.
@@ -106,11 +104,7 @@ func (d *deployer) deploy(ctx context.Context) (*clouddeploy.DeployResult, error
 		return nil, fmt.Errorf("invalid git repository reference: %q", d.params.gitRepo)
 	}
 	hostname, owner, repoName := repoParts[0], repoParts[1], repoParts[2]
-	username := d.params.gitUsername
-	if len(username) == 0 {
-		username = defaultUsername
-	}
-	gitRepo := newGitRepository(hostname, owner, repoName, d.params.gitEmail, username)
+	gitRepo := newGitRepository(hostname, owner, repoName, d.params.gitEmail, d.params.gitUsername)
 	if err := d.setupGitWorkspace(ctx, secret, gitRepo); err != nil {
 		return nil, fmt.Errorf("unable to set up git workspace: %v", err)
 	}
@@ -184,6 +178,9 @@ func (d *deployer) setupGitWorkspace(ctx context.Context, secret string, gitRepo
 	fmt.Printf("Cloning Git repository %s\n", d.params.gitRepo)
 	if _, err := gitRepo.cloneRepo(secret); err != nil {
 		return fmt.Errorf("failed to clone git repository %s: %v", d.params.gitRepo, err)
+	}
+	if err := gitRepo.config(d.params.gitUsername, d.params.gitEmail); err != nil {
+		return fmt.Errorf("failed setting up the git config in the git repository: %v", err)
 	}
 	fmt.Printf("Checking out branch %s\n", d.params.gitSourceBranch)
 	if _, err := gitRepo.checkoutBranch(d.params.gitSourceBranch); err != nil {

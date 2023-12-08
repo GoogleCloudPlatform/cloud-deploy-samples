@@ -51,6 +51,23 @@ func (g *gitRepository) cloneRepo(secret string) ([]byte, error) {
 	return runCmd(gitBin, args, "", false)
 }
 
+// config sets up the git config with a username and email in the Git repository.
+func (g *gitRepository) config(username string, email string) error {
+	if len(username) != 0 {
+		args := []string{"config", "user.name", username}
+		if _, err := runCmd(gitBin, args, g.dir, false); err != nil {
+			return err
+		}
+	}
+	if len(email) != 0 {
+		args := []string{"config", "user.email", email}
+		if _, err := runCmd(gitBin, args, g.dir, false); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // checkoutBranch checkouts and resets an existing branch or creates a new one.
 func (g *gitRepository) checkoutBranch(branch string) ([]byte, error) {
 	args := []string{"checkout", "-B", branch}

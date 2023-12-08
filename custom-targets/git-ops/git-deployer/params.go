@@ -45,6 +45,8 @@ const (
 const (
 	// Default timeout to use when polling the sync status of the Argo application.
 	defaultSyncTimeout = 30 * time.Minute
+	// Default committer username when not provided.
+	defaultUsername = "Cloud Deploy"
 )
 
 type params struct {
@@ -118,6 +120,9 @@ func determineParams() (*params, error) {
 	// Optional parameters:
 	params.gitPath = os.Getenv(gitPathEnvKey)
 	params.gitUsername = os.Getenv(gitUsernameEnvKey)
+	if len(params.gitUsername) == 0 {
+		params.gitUsername = defaultUsername
+	}
 	params.gitEmail = os.Getenv(gitEmailEnvKey)
 	params.gitCommitMessage = os.Getenv(gitCommitMessageEnvKey)
 	params.gitDestinationBranch = os.Getenv(gitDestinationBranchEnvKey)
