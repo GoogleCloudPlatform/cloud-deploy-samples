@@ -102,7 +102,7 @@ You can also describe the rollout created using the following command:
 gcloud deploy rollouts describe release-001-to-helm-cluster-0001 --release=release-001 --delivery-pipeline=helm-pipeline --project=$PROJECT_ID --region=$REGION
 ```
 
-Once the rollout has succeeded the Kubernetes `Deployment` in the Helm chart has been deployed to the GKE cluster.
+Once the rollout has succeeded the Kubernetes `Deployment` in the Helm chart has been deployed to the GKE cluster. See the [GKE Workload UI](https://console.cloud.google.com/kubernetes/workload/overview) for your project.
 
 ## 9. Clean up
 
