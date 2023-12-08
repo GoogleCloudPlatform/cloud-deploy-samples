@@ -25,7 +25,7 @@ usage() {
 }
 
 boldout() {
-  echo $(tput bold)$(tput setaf 1)"$@"$(tput sgr0)
+  echo $(tput bold)$(tput setaf 2)">> $@"$(tput sgr0)
 }
 
 while getopts "p:r:" arg; do
