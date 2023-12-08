@@ -179,7 +179,7 @@ func (d *deployer) setupGitWorkspace(ctx context.Context, secret string, gitRepo
 	if _, err := gitRepo.cloneRepo(secret); err != nil {
 		return fmt.Errorf("failed to clone git repository %s: %v", d.params.gitRepo, err)
 	}
-	if err := gitRepo.config(d.params.gitUsername, d.params.gitEmail); err != nil {
+	if err := gitRepo.config(); err != nil {
 		return fmt.Errorf("failed setting up the git config in the git repository: %v", err)
 	}
 	fmt.Printf("Checking out branch %s\n", d.params.gitSourceBranch)

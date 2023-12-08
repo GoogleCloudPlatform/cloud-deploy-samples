@@ -52,18 +52,20 @@ func (g *gitRepository) cloneRepo(secret string) ([]byte, error) {
 }
 
 // config sets up the git config with a username and email in the Git repository.
-func (g *gitRepository) config(username string, email string) error {
-	if len(username) != 0 {
-		args := []string{"config", "user.name", username}
-		if _, err := runCmd(gitBin, args, g.dir, false); err != nil {
-			return err
-		}
+func (g *gitRepository) config() error {
+	uArgs := []string{"config", "user.name", fmt.Sprintf("%q", g.username)}
+	if _, err := runCmd(gitBin, uArgs, g.dir, true); err != nil {
+		return err
 	}
-	if len(email) != 0 {
-		args := []string{"config", "user.email", email}
-		if _, err := runCmd(gitBin, args, g.dir, false); err != nil {
-			return err
-		}
+
+	// We need to set some value for the email otherwise run into errors when writing commits.
+	email := g.email
+	if len(email) == 0 {
+		email = "<>"
+	}
+	eArgs := []string{"config", "user.email", email}
+	if _, err := runCmd(gitBin, eArgs, g.dir, true); err != nil {
+		return err
 	}
 	return nil
 }
@@ -86,10 +88,9 @@ func (g *gitRepository) detectDiff() ([]byte, error) {
 	return runCmd(gitBin, args, g.dir, true)
 }
 
-// commit commits the changes in the index to the repository.
-// It supports configuring the username, email and message for the commit.
+// commit commits the changes in the index to the repository with the provided message.
 func (g *gitRepository) commit(msg string) ([]byte, error) {
-	args := []string{"-c", fmt.Sprintf("user.email=%s", g.email), "-c", fmt.Sprintf("user.name=%s", g.username), "commit", "-a", "-m", msg}
+	args := []string{"commit", "-a", "-m", msg}
 	return runCmd(gitBin, args, g.dir, true)
 }
 
