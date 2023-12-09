@@ -38,13 +38,12 @@ func (aa aliasAssigner) process(ctx context.Context) error {
 		return fmt.Errorf("target phase artifact not found in release")
 	}
 
-	gcsPath := fmt.Sprintf("%s/%s", ta.ArtifactUri, pa.ManifestPath)
+	manifestGcsPath := fmt.Sprintf("%s/%s", ta.ArtifactUri, pa.ManifestPath)
 	localManifest := "manifest.yaml"
-	fmt.Printf("Downloading deploy input manifest from %q.\n", gcsPath)
+	fmt.Printf("Downloading deploy input manifest from %q.\n", manifestGcsPath)
 
 	deployRequest := &clouddeploy.DeployRequest{
-		InputGCSPath:    ta.ArtifactUri,
-		ManifestGCSPath: pa.ManifestPath,
+		ManifestGCSPath: manifestGcsPath,
 	}
 
 	fmt.Printf("Downloading rendered manifest.\n")
