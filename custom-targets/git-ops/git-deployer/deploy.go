@@ -216,9 +216,9 @@ func (d *deployer) commitPushGitWorkspace(ctx context.Context, gitRepo *gitRepos
 	return nil
 }
 
-// handleDestinationBranch creates opens a pull request on the destination branch, if configured. Furthermore,
-// if Argo sync polling is enabled then the pull request is merged and the status of the Argo application is
-// polled until it's synced.
+// handleDestinationBranch opens a pull request on the destination branch if provided and will optionally
+// merge the PR if configured. Additionally, if Argo sync polling is enabled then the status of the Argo
+// Application is polled until it's synced.
 func (d *deployer) handleDestinationBranch(ctx context.Context, gitRepo *gitRepository, secret string) error {
 	// If no destination branch is provided then there is no need to open a pull request.
 	if len(d.params.gitDestinationBranch) == 0 {
@@ -251,18 +251,19 @@ func (d *deployer) handleDestinationBranch(ctx context.Context, gitRepo *gitRepo
 		return fmt.Errorf("unable to open pull request from %s to %s: %v", d.params.gitSourceBranch, d.params.gitDestinationBranch, err)
 	}
 
-	// If Argo sync isn't enabled then the pull request is only opened.
-	if !d.params.enableArgoSyncPoll {
+	if !d.params.enablePullRequestMerge {
 		return nil
 	}
-
-	fmt.Println("Argo sync polling is enabled, merging the pull request")
+	fmt.Println("Merging the pull request")
 	mr, err := gitProvider.MergePullRequest(pr.Number)
 	if err != nil {
 		return fmt.Errorf("unable to merge pull request %d: %v", pr.Number, err)
 	}
 
-	fmt.Printf("Setting up cluster credentials for %s\n", d.params.gkeCluster)
+	if !d.params.enableArgoSyncPoll {
+		return nil
+	}
+	fmt.Printf("Argo sync polling is enabled, setting up cluster credentials for %s\n", d.params.gkeCluster)
 	if _, err := gcloudClusterCredentials(d.params.gkeCluster); err != nil {
 		return fmt.Errorf("unable to set up cluster credentials: %v", err)
 	}

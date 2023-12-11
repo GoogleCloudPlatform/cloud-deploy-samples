@@ -1,10 +1,20 @@
 # Cloud Deploy Git Deployer Sample
-This directory contains a sample implementation of a Cloud Deploy Custom Target for deploying to a Git repository. The supported Git providers are `github.com` and `gitlab.com`. The deployer can also be configured to poll the status of an Argo Application until the deployed changes are synced.
+This directory contains a sample implementation of a Cloud Deploy Custom Target for deploying to a Git repository. The supported Git providers are `github.com` and `gitlab.com`.
 
 **This is not an officially supported Google product, and it is not covered by a
 Google Cloud support contract. To report bugs or request features in a Google
 Cloud product, please contact [Google Cloud
 support](https://cloud.google.com/support).**
+
+# Overview
+
+The GitOps deployer allows you to use Cloud Deploy to manage your delivery pipeline while using a Kubernetes git synchronization tool (such as Argo) to actually apply changes to the cluster. This enables normal operation and use of Cloud Deploy features (such as progressions, verification, automation, etc…) with the difference being the deploy job writes the manifest to a git repository instead of applying to the cluster directly. From there, it is expected that a git syncing tool is running on the clusters which will synchronize its state.
+
+Example use cases:
+
+* You have an existing GitOps setup and would like to extend it with Cloud Deploy features such as managing the progression sequence, running pre-post deployment actions and verifications
+* You have an existing Cloud Deploy pipeline and would like to add git history of all changes to the target
+* You want Cloud Deploy to act as your single control pane for all deployment activities and want to connect your GitOps flows into it.
 
 # Quickstart
 A quickstart that uses this sample is available [here](./quickstart/QUICKSTART.md).
@@ -25,11 +35,12 @@ a custom render and expects Cloud Deploy to perform its default rendering proces
 | customTarget/gitPath | No | Relative path from the repository root where the manifest will be written. If not provided then defaults to the root of the repository with the file name "manifest.yaml" |
 | customTarget/gitUsername | No | The committer username, if not provided then defaults to "Cloud Deploy" |
 | customTarget/gitEmail | No | The committer email, if not provided then the email is left empty |
-| customTarget/gitCommitMessage | No | The commit message to use, if not provided then defaults to: "Delivery Pipeline: {pipeline-id} Rollout: {rollout-id}" |
+| customTarget/gitCommitMessage | No | The commit message to use, if not provided then defaults to: "Delivery Pipeline: {pipeline-id} Release: {release-id} Rollout: {rollout-id}" |
 | customTarget/gitDestinationBranch | No | The branch a pull request will be opened against, if not provided then no pull request is opened and the deploy completes upon the commit and push to the source branch |
 | customTarget/gitPullRequestTitle | No | The title of the pull request, if not provided then defaults to "Cloud Deploy: Release {release-id}, Rollout {rollout-id}" |
 | customTarget/gitPullRequestBody | No | The body of the pull request, if not provided then defaults to "Project: {project-num} Location: {location} Delivery Pipeline: {pipeline-id} Target: {target-id} Release: {release-id} Rollout: {rollout-id}" |
-| customTarget/gitEnableArgoSyncPoll | No | Whether to poll the sync status of the Argo Application. If `true` then the pull request is merged and the deployer polls the Argo Application until the the merged changes are synced. When enabled the following deploy parameters become required: `gitGKECluster`, `gitArgoApplication`, and `gitArgoNamespace` |
+| customTarget/gitEnablePullRequestMerge | No | Whether to merge the pull request opened against the `gitDestinationBRanch` |
+| customTarget/gitEnableArgoSyncPoll | No | Whether to poll the sync status of the Argo Application. The deployer polls the Argo Application until the the merged changes are synced. When enabled the following deploy parameters become required: `gitGKECluster`, `gitArgoApplication`, and `gitArgoNamespace` |
 | customTarget/gitGKECluster | No | The name of the GKE cluster hosting the Argo Application resource, required when `gitEnableArgoSyncPoll` is `true` |
 | customTarget/gitArgoApplication | No | The name of the Argo Application resource associated with the Git repository, required when `gitEnableArgoSyncPoll` is `true` |
 | customTarget/gitArgoNamespace | No | The namespace the Argo Application resource resides in, required when `gitEnableArgoSyncPoll` is `true` |
@@ -59,7 +70,7 @@ The script does the following on your behalf:
 5. Apply a custom target type for Git to Cloud Deploy that references the skaffold configuration in Cloud Storage
 
 # How the sample image works
-The Git deployer sample image is built to only handle deploy requests from Cloud Deploy. The expectation is that the default rendering process is performed by Cloud Deploy.
+The Git deployer sample uses the default Cloud Deploy rendering process. After rendering, deploy operations are handled by this Git deployer.
 
 ## Deploy
 The deploy process consists of the following steps:
@@ -74,8 +85,8 @@ The deploy process consists of the following steps:
 
 5. If a destination branch is provided via `customTarget/gitDestinationBranch`:
 
-    a. Open a pull request with the changes from the source branch to the destination branch.
+    a. Open a pull request with the changes from the source branch to the destination branch. The pull request is merged if `customTarget/gitEnablePullRequestMerge` is `true`.
 
-    b. If `customTarget/gitEnableArgoSyncPoll` is `true` then the pull request is merged and the deployer polls the Argo Application until the status is `Synced` with the merged changes or the timeout is reached.
+    b. If `customTarget/gitEnableArgoSyncPoll` is `true` then the deployer polls the Argo Application until the status is `Synced` with the merged changes or the timeout is reached.
 
 6. The rendered manifest is uploaded to Cloud Storage as a Cloud Deploy deploy artifact.

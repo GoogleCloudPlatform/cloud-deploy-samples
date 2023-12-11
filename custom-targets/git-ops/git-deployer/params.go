@@ -25,21 +25,22 @@ import (
 // Cloud Deploy transforms a deploy parameter "customTarget/gitRepo" into an
 // environment variable of the form "CLOUD_DEPLOY_customTarget_gitRepo".
 const (
-	gitRepoEnvKey               = "CLOUD_DEPLOY_customTarget_gitRepo"
-	gitPathEnvKey               = "CLOUD_DEPLOY_customTarget_gitPath"
-	gitSourceBranchEnvKey       = "CLOUD_DEPLOY_customTarget_gitSourceBranch"
-	gitSecretEnvKey             = "CLOUD_DEPLOY_customTarget_gitSecret"
-	gitUsernameEnvKey           = "CLOUD_DEPLOY_customTarget_gitUsername"
-	gitEmailEnvKey              = "CLOUD_DEPLOY_customTarget_gitEmail"
-	gitCommitMessageEnvKey      = "CLOUD_DEPLOY_customTarget_gitCommitMessage"
-	gitDestinationBranchEnvKey  = "CLOUD_DEPLOY_customTarget_gitDestinationBranch"
-	gitPullRequestTitleEnvKey   = "CLOUD_DEPLOY_customTarget_gitPullRequestTitle"
-	gitPullRequestBodyEnvKey    = "CLOUD_DEPLOY_customTarget_gitPullRequestBody"
-	gitEnableArgoSyncPollEnvKey = "CLOUD_DEPLOY_customTarget_gitEnableArgoSyncPoll"
-	gitGKEClusterEnvKey         = "CLOUD_DEPLOY_customTarget_gitGKECluster"
-	gitArgoAppEnvKey            = "CLOUD_DEPLOY_customTarget_gitArgoApplication"
-	gitArgoNamespaceEnvKey      = "CLOUD_DEPLOY_customTarget_gitArgoNamespace"
-	gitArgoSyncTimeoutEnvKey    = "CLOUD_DEPLOY_customTarget_gitArgoSyncTimeout"
+	gitRepoEnvKey                   = "CLOUD_DEPLOY_customTarget_gitRepo"
+	gitPathEnvKey                   = "CLOUD_DEPLOY_customTarget_gitPath"
+	gitSourceBranchEnvKey           = "CLOUD_DEPLOY_customTarget_gitSourceBranch"
+	gitSecretEnvKey                 = "CLOUD_DEPLOY_customTarget_gitSecret"
+	gitUsernameEnvKey               = "CLOUD_DEPLOY_customTarget_gitUsername"
+	gitEmailEnvKey                  = "CLOUD_DEPLOY_customTarget_gitEmail"
+	gitCommitMessageEnvKey          = "CLOUD_DEPLOY_customTarget_gitCommitMessage"
+	gitDestinationBranchEnvKey      = "CLOUD_DEPLOY_customTarget_gitDestinationBranch"
+	gitPullRequestTitleEnvKey       = "CLOUD_DEPLOY_customTarget_gitPullRequestTitle"
+	gitPullRequestBodyEnvKey        = "CLOUD_DEPLOY_customTarget_gitPullRequestBody"
+	gitEnablePullRequestMergeEnvKey = "CLOUD_DEPLOY_customTarget_gitEnablePullRequestMerge"
+	gitEnableArgoSyncPollEnvKey     = "CLOUD_DEPLOY_customTarget_gitEnableArgoSyncPoll"
+	gitGKEClusterEnvKey             = "CLOUD_DEPLOY_customTarget_gitGKECluster"
+	gitArgoAppEnvKey                = "CLOUD_DEPLOY_customTarget_gitArgoApplication"
+	gitArgoNamespaceEnvKey          = "CLOUD_DEPLOY_customTarget_gitArgoNamespace"
+	gitArgoSyncTimeoutEnvKey        = "CLOUD_DEPLOY_customTarget_gitArgoSyncTimeout"
 )
 
 const (
@@ -81,6 +82,8 @@ type params struct {
 	//	Release: {release-id}
 	//	Rollout: {rollout-id}"
 	gitPullRequestBody string
+	// Whether to merge the pull request opened against the gitDestintionBranch.
+	enablePullRequestMerge bool
 	// Whether to poll the sync status of an Argo Application. If enabled then the deploy only
 	// succeeds if the Argo Application is synced with the committed changes.
 	enableArgoSyncPoll bool
@@ -129,6 +132,17 @@ func determineParams() (*params, error) {
 	params.gitPullRequestTitle = os.Getenv(gitPullRequestTitleEnvKey)
 	params.gitPullRequestBody = os.Getenv(gitPullRequestBodyEnvKey)
 
+	enablePRMerge := false
+	prm, ok := os.LookupEnv(gitEnablePullRequestMergeEnvKey)
+	if ok {
+		var err error
+		enablePRMerge, err = strconv.ParseBool(prm)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse parameter %q: %v", gitEnablePullRequestMergeEnvKey, err)
+		}
+	}
+	params.enablePullRequestMerge = enablePRMerge
+
 	enableSync := false
 	es, ok := os.LookupEnv(gitEnableArgoSyncPollEnvKey)
 	if ok {
@@ -141,6 +155,11 @@ func determineParams() (*params, error) {
 	params.enableArgoSyncPoll = enableSync
 
 	if enableSync {
+		// The pull request needs to be merged in order to poll the Argo Application status.
+		if !enablePRMerge {
+			return nil, fmt.Errorf("parameter %q must be true when Argo sync polling is enabled", gitEnablePullRequestMergeEnvKey)
+		}
+
 		// If Argo sync is enabled then some additional parameters become required:
 		gkeCluster := os.Getenv(gitGKEClusterEnvKey)
 		if len(gkeCluster) == 0 {

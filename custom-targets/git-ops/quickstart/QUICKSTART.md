@@ -4,7 +4,7 @@ This page shows you how to use Cloud Deploy to deploy to a Git Repository on `gi
 
 In this quickstart you will:
 
-1. Create a Github repository and a Personal Access Token to give a service account access to the repository.
+1. Create a GitHub repository and a Personal Access Token to give a service account access to the repository.
 2. Define a Cloud Deploy delivery pipeline, custom target type for Git, and two targets (dev and prod).
 3. Create a Cloud Deploy release and rollout to write the rendered manifest to the Git repository under a `dev` path in the `deploy` branch and create a pull request to the `main` branch.
 4. Promote the release to deploy the rendered manifest to the Git repository under a `prod` path in the `deploy` branch and create a pull request to the `main` branch.
@@ -61,9 +61,9 @@ From within the `quickstart` directory, run the following command to build the G
 
 For information about the `build_and_register.sh` script, see the [README](../README.md#build)
 
-## 5. Create Github Repository and Personal Access Token (PAT)
+## 5. Create GitHub Repository and Personal Access Token (PAT)
 
-Create a [new Github repository](https://github.com/new) where the manifests will be written to when deploying. Set the repository and owner as an environment variables:
+Create a [new GitHub repository](https://github.com/new) with a README since the quickstart depends on the existence of a `main` branch. The rendered manifests will be written to this repository during the deployment process. Set the repository and owner as environment variables:
 
 ```shell
 export GIT_REPO="YOUR_REPO" # e.g. my-test-repo
