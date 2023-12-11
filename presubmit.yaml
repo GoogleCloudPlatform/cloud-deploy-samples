@@ -7,3 +7,8 @@ steps:
       go build -C custom-targets/git-ops/git-deployer
       go build -C custom-targets/helm/helm-deployer
       go build -C custom-targets/terraform/terraform-deployer
+  - name: docker
+    script: |
+        docker build custom-targets/git-ops/git-deployer
+        docker build custom-targets/helm/helm-deployer
+        docker build custom-targets/terraform/terraform-deployer
