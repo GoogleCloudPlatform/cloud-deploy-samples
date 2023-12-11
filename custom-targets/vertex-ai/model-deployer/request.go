@@ -16,7 +16,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
 	"os"
@@ -47,77 +46,26 @@ type requestHandler interface {
 	process(ctx context.Context) error
 }
 
-// determineRequestHandler reads the environment variables set by Cloud Deploy in order to determine
-// the type of params that needs to be processed and returns the appropriate handler. Returns an error
-// if the params cannot be handled.
-func determineRequestHandler(ctx context.Context) (requestHandler, error) {
-	flag.BoolVar(&addAliasesMode, "add-aliases-mode", false, "if enabled, adds aliases set in vertexAIAliases environment variable to the deployed model")
-	flag.Parse()
-	gcsClient, err := storage.NewClient(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create gcs client: %v", err)
-	}
+// createRequestHandler creates a requestHandler for the provided Cloud Deploy request.
+func createRequestHandler(cloudDeployRequest interface{}, params *params, gcsClient *storage.Client) (requestHandler, error) {
+	switch r := cloudDeployRequest.(type) {
+	case *clouddeploy.RenderRequest:
+		return &renderer{
+			req:       r,
+			params:    params,
+			gcsClient: gcsClient,
+		}, nil
 
-	if addAliasesMode {
-		return newAliasHandler(gcsClient)
-	}
+	case *clouddeploy.DeployRequest:
+		return &deployer{
+			req:       r,
+			params:    params,
+			gcsClient: gcsClient,
+		}, nil
 
-	reqType := os.Getenv(clouddeploy.RequestTypeEnvKey)
-	switch reqType {
-	case "RENDER":
-		return newRenderHandler(gcsClient)
-	case "DEPLOY":
-		return newDeployHandler(gcsClient)
 	default:
-		return nil, fmt.Errorf("received unexpected Cloud Deploy params type: %v", reqType)
+		return nil, fmt.Errorf("received unsupported cloud deploy request type: %q", os.Getenv(clouddeploy.RequestTypeEnvKey))
 	}
-}
-
-// newRenderHandler returns a handler for processing render requests.
-func newRenderHandler(gcsClient *storage.Client) (requestHandler, error) {
-	percentage, err := strconv.Atoi(os.Getenv(clouddeploy.PercentageEnvKey))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse env var %q", clouddeploy.PercentageEnvKey)
-	}
-
-	params, err := determineParams()
-
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse params: %v", err)
-	}
-
-	rr := &clouddeploy.RenderRequest{
-		Target:        os.Getenv(clouddeploy.TargetEnvKey),
-		Percentage:    percentage,
-		InputGCSPath:  os.Getenv(clouddeploy.InputGCSEnvKey),
-		OutputGCSPath: os.Getenv(clouddeploy.OutputGCSEnvKey),
-	}
-
-	return &renderer{
-		gcsClient: gcsClient,
-		req:       rr,
-		params:    params}, nil
-}
-
-// newDeployHandler returns a handler for processing deploy requests.
-func newDeployHandler(gcsClient *storage.Client) (requestHandler, error) {
-	percentage, err := strconv.Atoi(os.Getenv(clouddeploy.PercentageEnvKey))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse env var %q: %v", clouddeploy.PercentageEnvKey, err)
-	}
-
-	params, err := determineParams()
-
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse params: %v", err)
-	}
-
-	request := &clouddeploy.DeployRequest{
-		Percentage:      percentage,
-		ManifestGCSPath: os.Getenv(clouddeploy.ManifestGCSEnvKey),
-		OutputGCSPath:   os.Getenv(clouddeploy.OutputGCSEnvKey),
-	}
-	return &deployer{gcsClient: gcsClient, req: request, params: params}, nil
 }
 
 // params contains the deploy parameter values passed into the execution environment.

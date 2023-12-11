@@ -15,8 +15,11 @@
 package main
 
 import (
+	"cloud.google.com/go/storage"
 	"context"
+	"flag"
 	"fmt"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
 	"os"
 )
 
@@ -30,9 +33,41 @@ func main() {
 
 func do() error {
 	ctx := context.Background()
-	h, err := determineRequestHandler(ctx)
+
+	gcsClient, err := storage.NewClient(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to create gcs client: %v", err)
+	}
+
+	flag.BoolVar(&addAliasesMode, "add-aliases-mode", false, "if enabled, adds aliases set in vertexAIAliases environment variable to the deployed model")
+	flag.Parse()
+
+	if addAliasesMode {
+		ah, err := newAliasHandler(gcsClient)
+		if err != nil {
+			return fmt.Errorf("unable to create alias handler: %v", err)
+		}
+		return ah.process(ctx)
+	}
+
+	req, err := clouddeploy.DetermineRequest(ctx, gcsClient, []string{"CANARY"})
+
 	if err != nil {
 		return err
 	}
-	return h.process(ctx)
+
+	params, err := determineParams()
+
+	if err != nil {
+		return fmt.Errorf("unable to parse params: %v", err)
+	}
+
+	handler, err := createRequestHandler(req, params, gcsClient)
+
+	if err != nil {
+		return fmt.Errorf("unable to create request handler: %v", err)
+	}
+
+	return handler.process(ctx)
+
 }
