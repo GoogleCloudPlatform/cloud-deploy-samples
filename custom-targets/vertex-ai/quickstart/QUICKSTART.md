@@ -123,7 +123,7 @@ gcloud deploy releases create release-001 \
     --project=$PROJECT_ID \
     --region=$REGION \
     --source=configuration \
-    --deploy-parameters="vertexAIModel=projects/$PROJECT_ID/locations/$REGION/models/test_model"
+    --deploy-parameters="customTarget/vertexAIModel=projects/$PROJECT_ID/locations/$REGION/models/test_model"
 ```
 
 ### Explanation of command line flags
@@ -132,9 +132,8 @@ The `--source` command line flag instructs gcloud where to look for the configur
 
 The `--deploy-parameters` flag is used to provide the custom deployer with additional parameters needed to perform the deployment.
 
-Here, we are providing the custom deployer with two parameters:
-* `vertexAIModel`: the full resource name of the model to deploy
-* `vertexAIConfigPath`: location within the source directory where the per-target configuration folders are located
+Here, we are providing the custom deployer with deploy parameter `customTarget/vertexAIModel`
+which specifies the full resource name of the model to deploy
 
 The remaining flags specify the Cloud Deploy Delivery Pipeline. `--delivery-pipeline` is the name of
 the delivery pipeline where the release will be created, and the project and region of the pipeline

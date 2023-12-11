@@ -21,11 +21,11 @@ The table below lists the supported deploy parameters, whether the parameter is 
 
 | Parameter               | Required | Recommended Location | Description                                                                                                                                     | 
 |-------------------------|----------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
-| vertexAIModel           | Yes      | Release              | Model to deploy. Format is "projects/{project}/locations/{location}/models/{modelId}"                                                           |
-| vertexAIMinReplicaCount | Yes      | Release              | The minimum replica count to assign for the deployed model.                                                                                     |
-| vertexAIEndpoint        | Yes      | Target               | The Vertex AI endpoint where the model will be deployed to. Format is "projects/{project}/locations/{location}/endpoints/{endpointId}"          |
-| vertexAIConfigPath      | No       | Release              | Path to the DeployedModel configuration in the Cloud Deploy Release archive. If not provided then defaults to the root directory of the archive |
-| vertexAIAliases         | No       | Target               | Comma-separated list of aliases that should be assign to a model after a deployment. Required when using the add alias option for the deployer. |
+| customTarget/vertexAIModel           | Yes      | Release              | Model to deploy. Format is "projects/{project}/locations/{location}/models/{modelId}"                                                           |
+| customTarget/vertexAIMinReplicaCount | Yes      | Release              | The minimum replica count to assign for the deployed model.                                                                                     |
+| customTarget/vertexAIEndpoint        | Yes      | Target               | The Vertex AI endpoint where the model will be deployed to. Format is "projects/{project}/locations/{location}/endpoints/{endpointId}"          |
+| customTarget/vertexAIConfigurationPath      | No       | Target               | Path to the DeployedModel configuration in the Cloud Deploy Release archive. If not provided then defaults to the root directory of the archive |
+| customTarget/vertexAIAliases         | No       | Target               | Comma-separated list of aliases that should be assign to a model after a deployment. Required when using the add alias option for the deployer. |
 
 ### Per-target configuration
 
@@ -40,23 +40,16 @@ You can provide the `DeployedModel` portion of the request by writing a file con
 By default, the deployer will look for a `deployedModel.yaml` under the source folder directory (where the skaffold file is located). If found, the DeployedModel definition
 within the file will be applied to all targets in the pipeline.
 
-To define different configuration options between targets (for example, to use different service accounts in the development and production targets), 
-you must create a folder for each target you want this configuration applied. The name of the folder must match the name of the target.
+To specify a different location for the configuration, use the deploy parameter `customTarget/vertexAIConfigurationPath`.
 
-Then within each folder, you should have a `deployedModel.yaml` that has the configuration you want for that target defined.
-
-The deployer uses the `vertexAIConfigPath` deploy parameter to determine the directory where these folders are located.
-The value of this deploy parameter has the format `{path}/{target}/deployedModel.yaml`. Where `path` is a directory path relative to the source folder,
-and `target` is the target id of the target where this configuration should apply.
-
-For example, for the following `vertexAIConfigPath` value:
+For example, for the following `customTarget/vertexAIConfigurationPath` value:
 ```
-vertexAIConfigPath=environments
+customTarget/vertexAIConfigurationPath=prod
 ```
 
-For a target named `prod` the deployer will look for  a configuration with the following path (relative to the working directory)
+The deployer will look for  a configuration with the following path (relative to the directory containing the `skaffold.yaml`)
 
-`environments/prod/deployedModel.yaml`
+`prod/deployedModel.yaml`
 
 See the [quickstart](./quickstart/QUICKSTART.md) for a practical example.
 ### Using placeholders in the configuration file
@@ -84,10 +77,10 @@ The sample image is built to handle both a render, deploy, and post-deploy reque
 
 ## Render
 
-1. The configuration file `deployedModel.yaml` is loaded, the deploy parameter `vertexAIConfigPath` determines the location if its provided.
+1. The configuration file `deployedModel.yaml` is loaded, the deploy parameter `customTarget/vertexAIConfigurationPath` determines the location if its provided.
 2. Placeholders in the config file are set with the corresponding deploy parameter value if it exists.
-3. The required field minReplicaCount is set using the provided `vertexAIMinReplicaCount` deploy parameter value
-4. The model resource name passed using `vertexAIModel` is adjusted to also include the model version id (if its not already provided) then this value is set in the request
+3. The required field minReplicaCount is set using the provided `customTarget/vertexAIMinReplicaCount` deploy parameter value
+4. The model resource name passed using `customTarget/vertexAIModel` is adjusted to also include the model version id (if its not already provided) then this value is set in the request
 5. If this is a canary deployment, the traffic configuration is split between the new model and previous model. Since actual deployment can occur much later than when the rendering of this manifest occurs,
    we use a placeholder for the previously deployed model, and resolve the ID of the previous model during deploy time.
 6. The `DeployedModelRequest` object that is built is transformed into YAML and stored in google cloud storage to be retrieved during deployment.

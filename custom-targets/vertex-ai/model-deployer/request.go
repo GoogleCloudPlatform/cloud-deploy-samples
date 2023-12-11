@@ -29,14 +29,14 @@ import (
 // Environment variable keys specific to the vertex ai deployer. These are provided via
 // deploy parameters in Cloud Deploy.
 const (
-	minReplicaCountEnvKey = "vertexAIMinReplicaCount"
-	modelEnvKey           = "vertexAIModel"
+	minReplicaCountEnvKey = "CLOUD_DEPLOY_customTarget_vertexAIMinReplicaCount"
+	modelEnvKey           = "CLOUD_DEPLOY_customTarget_vertexAIModel"
 
-	endpointEnvKey = "vertexAIEndpoint"
+	endpointEnvKey = "CLOUD_DEPLOY_customTarget_vertexAIEndpoint"
 
-	aliasEnvKey = "vertexAIAliases"
+	aliasEnvKey = "CLOUD_DEPLOY_customTarget_vertexAIAliases"
 
-	configPathKey = "vertexAIConfigPath"
+	configPathKey = "CLOUD_DEPLOY_customTarget_vertexAIConfigurationPath"
 )
 
 var addAliasesMode bool
