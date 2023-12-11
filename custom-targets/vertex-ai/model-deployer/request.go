@@ -144,7 +144,6 @@ func determineParams() (*params, error) {
 
 	replicaCount, err := strconv.Atoi(os.Getenv(minReplicaCountEnvKey))
 	if err != nil {
-		fmt.Println("unable to obtain minReplicaCount parameter from environment variable, will attempt to check if in the configuration file if its provided")
 		replicaCount = 0
 	}
 

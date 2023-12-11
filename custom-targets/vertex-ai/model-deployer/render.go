@@ -92,7 +92,7 @@ func (r *renderer) render(ctx context.Context) (*clouddeploy.RenderResult, error
 	}
 	fmt.Printf("Downloaded render input archive from %s\n", inURI)
 
-	out, err := renderDeployModelRequest(ctx, r.params.configPath, r.params.endpoint, r.params.model, r.params.minReplicaCount, int64(r.req.Percentage))
+	out, err := r.renderDeployModelRequest(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error rendering deploy model params: %v", err)
 	}
@@ -185,13 +185,13 @@ func verifyModelNameNotDefinedInConfig(deployedModel *aiplatform.GoogleCloudAipl
 }
 
 // renderDeployModelRequest generates a model definition
-func renderDeployModelRequest(ctx context.Context, configPath, endpointName, modelName string, minReplicaCount int64, percentage int64) ([]byte, error) {
+func (r *renderer) renderDeployModelRequest(ctx context.Context) ([]byte, error) {
 
-	if err := applyDeployParams(configPath); err != nil {
+	if err := applyDeployParams(r.params.configPath); err != nil {
 		return nil, fmt.Errorf("cannot apply deploy parameters to configuration file: %v", err)
 	}
 
-	modelRegion, err := fetchRegionFromModel(modelName)
+	modelRegion, err := fetchRegionFromModel(r.params.model)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse region from model name: %v", err)
 	}
@@ -203,7 +203,7 @@ func renderDeployModelRequest(ctx context.Context, configPath, endpointName, mod
 	// blank deployed model template
 	deployedModel := &aiplatform.GoogleCloudAiplatformV1DeployedModel{}
 
-	configuration, err := loadConfigurationFile(configPath)
+	configuration, err := loadConfigurationFile(r.params.configPath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to obtain configuration data: %v", err)
 	}
@@ -212,7 +212,7 @@ func renderDeployModelRequest(ctx context.Context, configPath, endpointName, mod
 		return nil, fmt.Errorf("unable to parse configuration data into DeployModel object: %v", err)
 	}
 
-	model, err := fetchModel(aiplatformService, modelName)
+	model, err := fetchModel(aiplatformService, r.params.model)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch model: %v", err)
 	}
@@ -222,17 +222,17 @@ func renderDeployModelRequest(ctx context.Context, configPath, endpointName, mod
 		return nil, fmt.Errorf("unable to resolve model version: %v", err)
 	}
 
-	if err := validateRequest(modelNameWithVersionId, endpointName, minReplicaCount, deployedModel); err != nil {
+	if err := validateRequest(modelNameWithVersionId, r.params.endpoint, r.params.minReplicaCount, deployedModel); err != nil {
 		return nil, fmt.Errorf("manifest validation failed: %v", err)
 	}
 	deployedModel.Model = modelNameWithVersionId
 
 	if deployedModel.DedicatedResources == nil {
-		deployedModel.DedicatedResources = &aiplatform.GoogleCloudAiplatformV1DedicatedResources{MinReplicaCount: minReplicaCount}
+		deployedModel.DedicatedResources = &aiplatform.GoogleCloudAiplatformV1DedicatedResources{MinReplicaCount: r.params.minReplicaCount}
 	}
 
 	if deployedModel.DedicatedResources.MinReplicaCount == 0 {
-		deployedModel.DedicatedResources.MinReplicaCount = minReplicaCount
+		deployedModel.DedicatedResources.MinReplicaCount = r.params.minReplicaCount
 	}
 
 	// deploy model params requires this field to be non-nil. Setting to the default "n1-standard-2"
@@ -245,6 +245,7 @@ func renderDeployModelRequest(ctx context.Context, configPath, endpointName, mod
 		deployedModel.DedicatedResources.MachineSpec.MachineType = "n1-standard-2"
 	}
 
+	percentage := int64(r.req.Percentage)
 	trafficSplit := map[string]int64{}
 	trafficSplit["0"] = percentage
 

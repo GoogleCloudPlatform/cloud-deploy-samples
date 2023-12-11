@@ -27,7 +27,26 @@ The table below lists the supported deploy parameters, whether the parameter is 
 | customTarget/vertexAIConfigurationPath      | No       | -                    | Path to the DeployedModel configuration in the Cloud Deploy Release archive. If not provided then defaults to file `deployedModel.yaml` in the root directory of the archive |
 | customTarget/vertexAIAliases         | No       | Target               | Comma-separated list of aliases that should be assign to a model after a deployment. Required when using the add alias option for the deployer.                                     |
 
-### Per-target configuration
+# Building the sample image
+The `build_and_register.sh` script within this `model-deployer` directory can be used to build the Vertex AI model deployer image and register a Cloud Deploy custom target type that references the image. To use the script run the following command:
+
+```shell
+./build_and_register.sh -p $PROJECT_ID -r $REGION
+```
+
+The script does the following on your behalf:
+1. Create an Artifact Registry Repository
+2. Give the default compute service account access to the Repository
+3. Build the image and push it to the Repository
+4. Create a Cloud Storage bucket and within the bucket a skaffold configuration that references the image built
+5. Apply a custom target type for Vertex AI to Cloud Deploy that references the skaffold configuration in Cloud Storage
+
+# How the sample image works
+
+The sample image is built to handle both a render, deploy, and post-deploy request from Cloud Deploy. It also supports canary deployment by splitting endpoint traffic
+across multiple deployed models.
+
+## Per-target configuration
 
 This custom deployer deploys a model by calling the `projects.locations.endpoints.deployModel` [API method](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.endpoints/deployModel).
 
@@ -36,6 +55,14 @@ The request takes as input a `DeployedModel` object.
 The `DeployModelRequest` object passed as an argument is generated during the `Render` operation and stored as a YAML file in Google Cloud Storage.
 
 You can provide the `DeployedModel` portion of the request by writing a file containing the YAML representation of the `DeployedModel` model object.
+
+Example `deployedModel.yaml`:
+```text
+displayName:test_model
+dedicatedResources:
+  minReplicaCount: 3
+  maxReplicaCount: 9
+```
 
 By default, the deployer will look for a `deployedModel.yaml` under the source folder directory (where the skaffold file is located). If found, the DeployedModel definition
 within the file will be applied to all targets in the pipeline.
@@ -52,38 +79,21 @@ The deployer will look for  a configuration with the following path (relative to
 `prod/deployedModel.yaml`
 
 See the [quickstart](./quickstart/QUICKSTART.md) for a practical example.
-### Using placeholders in the configuration file
+## Using placeholders in the configuration file
 
 In your configuration file, you can add placeholders for any values you want to substitute with the value of deploy parameters. These values will be substituted
-during the rendering step. See the [Cloud Deploy documentation](https://cloud.google.com/deploy/docs/parameters#add_placeholders) on deploy parameters for an explanation 
+during the rendering step. See the [Cloud Deploy documentation](https://cloud.google.com/deploy/docs/parameters#add_placeholders) on deploy parameters for an explanation
 on how this substitution works.
-
-# Building the sample image
-The `build_and_register.sh` script within this `vertex-ai-model-deployer` directory can be used to build the Vertex AI model deployer image and register a Cloud Deploy custom target type that references the image. To use the script run the following command:
-
-```shell
-./build_and_register.sh -p $PROJECT_ID -r $REGION
-```
-
-The script does the following on your behalf:
-1. Create an Artifact Registry Repository
-2. Give the default compute service account access to the Repository
-3. Build the image and push it to the Repository
-4. Create a Cloud Storage bucket and within the bucket a skaffold configuration that references the image built
-5. Apply a custom target type for Vertex AI to Cloud Deploy that references the skaffold configuration in Cloud Storage
-
-# How the sample image works
-The sample image is built to handle both a render, deploy, and post-deploy request from Cloud Deploy.
 
 ## Render
 
 1. The configuration file `deployedModel.yaml` is loaded, the deploy parameter `customTarget/vertexAIConfigurationPath` determines the location if its provided.
 2. Placeholders in the config file are set with the corresponding deploy parameter value if it exists.
-3. The required field minReplicaCount is set using the provided `customTarget/vertexAIMinReplicaCount` deploy parameter value
+3. The field minReplicaCount is set using the provided `customTarget/vertexAIMinReplicaCount` deploy parameter value if its not provided in a `deployedModel.yaml` file.
 4. The model resource name passed using `customTarget/vertexAIModel` is adjusted to also include the model version id (if its not already provided) then this value is set in the request
-5. If this is a canary deployment, the traffic configuration is split between the new model and previous model. Since actual deployment can occur much later than when the rendering of this manifest occurs,
+5. If this is a canary deployment, the traffic split is generated to route traffic between the new model and previous model. Since actual deployment can occur much later than when the rendering of this manifest occurs,
    we use a placeholder for the previously deployed model, and resolve the ID of the previous model during deploy time.
-6. The `DeployedModelRequest` object that is built is transformed into YAML and stored in google cloud storage to be retrieved during deployment.
+6. The `DeployedModelRequest` object that is built is transformed into YAML and stored in Google Cloud Storage to be retrieved during deployment.
 
 ## Deploy
 
@@ -91,5 +101,4 @@ The sample image is built to handle both a render, deploy, and post-deploy reque
 2. If its a canary deployment, the `previous-model` placeholder in the traffic split portion of the request is replaced with the ID of actual previous model.
 3. The [deployModel](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.endpoints/deployModel) API method is called, using deploy parameter value `vertexAIEndpoint` to
    deploy to the desired endpoint.
-4. The deployers polls for the deploy operation until the operation terminates or it times out.
-5. To save resources, the deployer queries the endpoint again for a list of all of its deployed models, then it un-deploys all models with zero traffic.
+4. Once the model deployment has completed, the vertexAIEndpoint is queried for all deployed models and any model with zero traffic is undeployed.

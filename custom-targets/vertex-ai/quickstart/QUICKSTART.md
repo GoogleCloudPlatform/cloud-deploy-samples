@@ -2,7 +2,7 @@
 
 ## Overview
 
-This quickstart demonstrates how to deploy a Vertex AI model to a endpoint using the Cloud Deploy custom target.
+This quickstart demonstrates how to deploy a Vertex AI model to an endpoint using a Cloud Deploy custom target.
 
 In this quickstart you will:
 
@@ -24,7 +24,7 @@ export REGION="YOUR_REGION"
 [Install](https://cloud.google.com/sdk/docs/install) the latest version of the Google Cloud CLI
 
 
-### APIS
+### APIs
 Enable the Cloud Deploy API, Compute Engine API, and Vertex AI API.
    ```shell
    gcloud services enable clouddeploy.googleapis.com aiplatform.googleapis.com compute.googleapis.com --project $PROJECT_ID
@@ -101,7 +101,7 @@ Apply the Cloud Deploy configuration defined in `clouddeploy.yaml`:
 gcloud deploy apply --file=clouddeploy.yaml --project=$PROJECT_ID --region=$REGION
 ```
 
-## 6. Install the Custom Target
+## 6. Build and Register a Custom Target Type for Vertex AI
 
 From within the `quickstart` directory, run this command to build the Vertex AI model deployer image and
 install the custom target resources:
@@ -157,7 +157,7 @@ gcloud deploy releases describe release-001 --delivery-pipeline=vertex-ai-cloud-
 ## 8. Monitor rollout status
 
 In the [Cloud Deploy UI](https://cloud.google.com/deploy) for your project click on the
-`vertex-ai-cloud-deploy-pipeline` delivery pipeline. Here you can see the release created and the rollout to the dev target for the release.
+`vertex-ai-cloud-deploy-pipeline` delivery pipeline. Here you can see the release created and the rollout to the target for the release.
 
 You can also describe the rollout created using the following command:
 
@@ -168,6 +168,7 @@ You can also describe the rollout created using the following command:
 It will take up to 15 minutes for the model to fully deploy.
 
 After the rollout completes, you can inspect the deployed models and traffic splits of the endpoint with `gcloud`
+
    ```shell
     gcloud ai endpoints describe $ENDPOINT_ID --region $REGION --project $PROJECT_ID
    ```
@@ -196,4 +197,10 @@ To delete the imported model:
 
 ```shell
  gcloud ai models delete test_model --region $REGION --project $PROJECT_ID
+```
+
+To delete Cloud Deploy resources:
+
+```shell
+ gcloud deploy delete --file=clouddeploy.yaml --force --project=$PROJECT_ID --region=$REGION
 ```
