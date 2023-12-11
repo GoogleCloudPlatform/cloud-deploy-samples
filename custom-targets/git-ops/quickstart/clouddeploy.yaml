@@ -1,0 +1,48 @@
+# Copyright 2023 Google LLC
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     https://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: git-pipeline
+serialPipeline:
+  stages:
+    - targetId: git-dev
+    - targetId: git-prod
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: git-dev
+customTarget:
+  customTargetType: git
+deployParameters:
+  customTarget/gitRepo: github.com/$GIT_OWNER/$GIT_REPO
+  customTarget/gitPath: dev/k8s.yaml
+  customTarget/gitSecret: projects/$PROJECT_ID/secrets/$SECRET_ID/versions/$SECRET_VERSION
+  customTarget/gitSourceBranch: deploy
+  customTarget/gitDestinationBranch: main
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: git-prod
+customTarget:
+  customTargetType: git
+deployParameters:
+  customTarget/gitRepo: github.com/$GIT_OWNER/$GIT_REPO
+  customTarget/gitPath: prod/k8s.yaml
+  customTarget/gitSecret: projects/$PROJECT_ID/secrets/$SECRET_ID/versions/$SECRET_VERSION
+  customTarget/gitSourceBranch: deploy
+  customTarget/gitDestinationBranch: main
