@@ -64,7 +64,7 @@ func (aa aliasAssigner) process(ctx context.Context) error {
 		return fmt.Errorf("unable to obtain region where deployed model is located: %v", err)
 	}
 
-	aiPlatformService, err := newService(ctx, modelRegion)
+	aiPlatformService, err := newAIPlatformService(ctx, modelRegion)
 	if err != nil {
 		return fmt.Errorf("unable to create aiplatform service: %v", err)
 	}

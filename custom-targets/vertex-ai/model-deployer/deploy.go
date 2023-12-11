@@ -12,34 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// deploy.go contains logic to deploy a model to a vertex AI endpoint.
 package main
 
 import (
 	"context"
 	"fmt"
-	"google.golang.org/api/aiplatform/v1"
-	"os"
-	"strings"
-	"sync"
-	"time"
-
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
+	"google.golang.org/api/aiplatform/v1"
 	"sigs.k8s.io/yaml"
 
 	"cloud.google.com/go/storage"
-	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 const aiDeployerSampleName = "clouddeploy-vertex-ai-sample"
 
-// deployer implements the handler interface to deploy a model using the vertex AI API.`.
+const localManifest = "manifest.yaml"
+
+// deployer implements the handler interface to deploy a model using the vertex AI API.
 type deployer struct {
 	gcsClient *storage.Client
 	params    *params
 	req       *clouddeploy.DeployRequest
 }
 
-// process processes the Deploy request.
+// process processes the Deploy request, and performs the vertex AI model deployment.
 func (d *deployer) process(ctx context.Context) error {
 	fmt.Println("Processing deploy request")
 
@@ -71,16 +68,12 @@ func (d *deployer) process(ctx context.Context) error {
 
 }
 
+// deploy performs the Vertex AI model deployment
 func (d *deployer) deploy(ctx context.Context) (*clouddeploy.DeployResult, error) {
-	localManifest := "manifest.yaml"
-	fmt.Printf("Downloading deploy input manifest from %q.\n", d.req.ManifestGCSPath)
 
-	_, err := d.req.DownloadManifest(ctx, d.gcsClient, localManifest)
-	if err != nil {
-		return nil, fmt.Errorf("unable to download deploy input from %s: %v", d.req.ManifestGCSPath, err)
+	if err := d.downloadManifest(ctx); err != nil {
+		return nil, err
 	}
-
-	fmt.Printf("Downloaded deploy input manifest.\n")
 
 	manifestData, err := d.applyModel(ctx, localManifest)
 	if err != nil {
@@ -98,6 +91,23 @@ func (d *deployer) deploy(ctx context.Context) (*clouddeploy.DeployResult, error
 	}, nil
 }
 
+// downloadManifest downloads the rendered manifest from Google Cloud Storage to the local manifest file path
+func (d *deployer) downloadManifest(ctx context.Context) error {
+	fmt.Printf("Downloading deploy input manifest from %q.\n", d.req.ManifestGCSPath)
+
+	downloadPath, err := d.req.DownloadManifest(ctx, d.gcsClient, localManifest)
+	if err != nil {
+		fmt.Printf("Unable to download deployed manifest from: %s.\n", d.req.ManifestGCSPath)
+		return fmt.Errorf("unable to download deploy input from %s: %v", d.req.ManifestGCSPath, err)
+	}
+
+	fmt.Printf("Downloaded deploy input manifest from: %s\n", downloadPath)
+
+	return nil
+}
+
+// addCommonMetadata inserts metadata into the deploy result that should be present
+// regardless of deploy success or failure.
 func (d *deployer) addCommonMetadata(rs *clouddeploy.DeployResult) {
 	if rs.Metadata == nil {
 		rs.Metadata = map[string]string{}
@@ -106,26 +116,13 @@ func (d *deployer) addCommonMetadata(rs *clouddeploy.DeployResult) {
 	rs.Metadata[clouddeploy.CustomTargetSourceSHAMetadataKey] = clouddeploy.GitCommit
 }
 
-func deployModelFromManifest(path string) (*aiplatform.GoogleCloudAiplatformV1DeployModelRequest, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("error reading manifest file: %v", err)
-	}
-
-	deployModelRequest := &aiplatform.GoogleCloudAiplatformV1DeployModelRequest{}
-
-	if err = yaml.Unmarshal(data, deployModelRequest); err != nil {
-		return nil, fmt.Errorf("unable to parse deploy model deployModelRequest from manifest file: %v", err)
-	}
-
-	return deployModelRequest, nil
-}
-
+// applyModel deploys the DeployModelRequest parsed from `localManifest`
+// it returns the DeployedModelRequest object that was used in yaml format.
 func (d *deployer) applyModel(ctx context.Context, localManifest string) ([]byte, error) {
 
 	deployModelRequest, err := deployModelFromManifest(localManifest)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to load DeployModelRequest from manifest: %v", err)
 	}
 
 	endpointRegion, err := fetchRegionFromEndpoint(d.params.endpoint)
@@ -133,9 +130,9 @@ func (d *deployer) applyModel(ctx context.Context, localManifest string) ([]byte
 		return nil, fmt.Errorf("unable to parse region from endpoint resource name: %v", err)
 	}
 
-	aiplatformService, err := newService(ctx, endpointRegion)
+	aiplatformService, err := newAIPlatformService(ctx, endpointRegion)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create service: %v", err)
+		return nil, fmt.Errorf("unable to create AI Platform Service: %v", err)
 	}
 
 	if d.req.Percentage != 100 {
@@ -198,107 +195,4 @@ func (d *deployer) applyModel(ctx context.Context, localManifest string) ([]byte
 	}
 
 	return yaml.Marshal(deployModelRequest)
-}
-
-func determinePreviousModel(service *aiplatform.Service, endpointName, model string) (string, error) {
-	endpoint, err := service.Projects.Locations.Endpoints.Get(endpointName).Do()
-	if err != nil {
-		return "", fmt.Errorf("unable to fetch endpoint: %v", err)
-	}
-
-	deployedModels := map[string]*aiplatform.GoogleCloudAiplatformV1DeployedModel{}
-
-	for _, dm := range endpoint.DeployedModels {
-		modelNameWithVersion := resolveDeployedModelNameWithVersion(dm)
-		deployedModels[modelNameWithVersion] = dm
-	}
-
-	delete(deployedModels, model)
-
-	if len(deployedModels) != 1 {
-		return "", fmt.Errorf("unable to resolve previous deployed model to canary against. Not including the current model to be deployed, the endpoint has %d deployed models but expected only one", len(deployedModels))
-	}
-
-	firstModel := []*aiplatform.GoogleCloudAiplatformV1DeployedModel{}
-
-	for _, dm := range deployedModels {
-		firstModel = append(firstModel, dm)
-	}
-	return firstModel[0].Id, nil
-}
-
-func resolveDeployedModelNameWithVersion(deployedModel *aiplatform.GoogleCloudAiplatformV1DeployedModel) string {
-	if strings.Contains(deployedModel.Model, "@") {
-		return deployedModel.Model
-	}
-	return fmt.Sprintf("%s@%s", deployedModel.Model, deployedModel.ModelVersionId)
-}
-
-const (
-	// wait for 30 seconds for a response from CCFE regarding an operation.
-	lroOperationTimeout = 30 * time.Second
-	// Polling duration, regardless of how long the lease is, we're going to poll for at most 30 mins.
-	pollingTimeout = 30 * time.Minute
-)
-
-// Poll will return the status of an operation if it finished within "operationTimeout" or an error
-// indicating that the operation is incomplete.
-func Poll(ctx context.Context, service *aiplatform.Service, op *aiplatform.GoogleLongrunningOperation) error {
-
-	opService := aiplatform.NewProjectsLocationsOperationsService(service)
-
-	_, err := opService.Get(op.Name).Do()
-
-	if err != nil {
-		return fmt.Errorf("unable to get operation")
-	}
-
-	pollFunc := GetWaitFunc(opService, op.Name, ctx)
-
-	err = wait.PollUntilContextTimeout(ctx, lroOperationTimeout, pollingTimeout, true, pollFunc)
-
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// GetWaitFunc waits for stuff
-func GetWaitFunc(service *aiplatform.ProjectsLocationsOperationsService, name string, ctx context.Context) wait.ConditionWithContextFunc {
-	return func(ctx context.Context) (done bool, err error) {
-
-		op, err := service.Get(name).Do()
-
-		if err != nil {
-			return false, err
-		}
-
-		if op.Done {
-			return true, nil
-		}
-
-		return false, nil
-
-	}
-}
-
-func pollChan(ctx context.Context, service *aiplatform.Service, lros ...*aiplatform.GoogleLongrunningOperation) <-chan error {
-	var wg sync.WaitGroup
-	out := make(chan error)
-	wg.Add(len(lros))
-
-	output := func(lro *aiplatform.GoogleLongrunningOperation) {
-		out <- Poll(ctx, service, lro)
-		wg.Done()
-	}
-
-	for _, lro := range lros {
-		go output(lro)
-	}
-
-	go func() {
-		wg.Wait()
-		close(out)
-	}()
-	return out
 }
