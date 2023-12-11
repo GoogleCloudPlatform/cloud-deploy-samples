@@ -1,3 +1,17 @@
+// Copyright 2023 Google LLC
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+
+//     https://www.apache.org/licenses/LICENSE-2.0
+
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
 import (
@@ -16,9 +30,9 @@ const (
 	pollingTimeout = 30 * time.Minute
 )
 
-// Poll will return the status of an operation if it finished within "operationTimeout" or an error
+// poll will return the status of an operation if it finished within "operationTimeout" or an error
 // indicating that the operation is incomplete.
-func Poll(ctx context.Context, service *aiplatform.Service, op *aiplatform.GoogleLongrunningOperation) error {
+func poll(ctx context.Context, service *aiplatform.Service, op *aiplatform.GoogleLongrunningOperation) error {
 
 	opService := aiplatform.NewProjectsLocationsOperationsService(service)
 
@@ -28,7 +42,7 @@ func Poll(ctx context.Context, service *aiplatform.Service, op *aiplatform.Googl
 		return fmt.Errorf("unable to get operation")
 	}
 
-	pollFunc := GetWaitFunc(opService, op.Name, ctx)
+	pollFunc := getWaitFunc(opService, op.Name, ctx)
 
 	err = wait.PollUntilContextTimeout(ctx, lroOperationTimeout, pollingTimeout, true, pollFunc)
 
@@ -38,8 +52,8 @@ func Poll(ctx context.Context, service *aiplatform.Service, op *aiplatform.Googl
 	return nil
 }
 
-// GetWaitFunc waits for stuff
-func GetWaitFunc(service *aiplatform.ProjectsLocationsOperationsService, name string, ctx context.Context) wait.ConditionWithContextFunc {
+// getWaitFunc is a helper function that returns true if the specified operation has completed.
+func getWaitFunc(service *aiplatform.ProjectsLocationsOperationsService, name string, ctx context.Context) wait.ConditionWithContextFunc {
 	return func(ctx context.Context) (done bool, err error) {
 
 		op, err := service.Get(name).Do()
@@ -57,13 +71,14 @@ func GetWaitFunc(service *aiplatform.ProjectsLocationsOperationsService, name st
 	}
 }
 
+// pollChan is a helper function that facilitates polling multiple long running operations in parallel
 func pollChan(ctx context.Context, service *aiplatform.Service, lros ...*aiplatform.GoogleLongrunningOperation) <-chan error {
 	var wg sync.WaitGroup
 	out := make(chan error)
 	wg.Add(len(lros))
 
 	output := func(lro *aiplatform.GoogleLongrunningOperation) {
-		out <- Poll(ctx, service, lro)
+		out <- poll(ctx, service, lro)
 		wg.Done()
 	}
 

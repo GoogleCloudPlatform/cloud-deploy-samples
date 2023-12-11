@@ -62,7 +62,18 @@ func do() error {
 		return fmt.Errorf("unable to parse params: %v", err)
 	}
 
-	handler, err := createRequestHandler(req, params, gcsClient)
+	aiPlatformRegion, err := fetchRegionFromModel(params.model)
+	if err != nil {
+		return fmt.Errorf("unable to parse region from model resource name: %v", err)
+	}
+
+	aiPlatformService, err := newAIPlatformService(ctx, aiPlatformRegion)
+
+	if err != nil {
+		return fmt.Errorf("unable to create aiplatform.Service object : %v", err)
+	}
+
+	handler, err := createRequestHandler(req, params, gcsClient, aiPlatformService)
 
 	if err != nil {
 		return fmt.Errorf("unable to create request handler: %v", err)

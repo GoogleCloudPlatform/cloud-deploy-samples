@@ -30,7 +30,6 @@ import (
 const (
 	// The default place to look for a deployed model configuration file if a specific location is not specified
 	defaultConfigPath = "/workspace/source/deployedModel.yaml"
-
 	// Path to use when downloading the source input archive file.
 	srcArchivePath = "/workspace/archive.tgz"
 	// Path to use when unarchiving the source input.
@@ -44,14 +43,14 @@ var (
 
 // renderer implements the handler interface for performing a render.
 type renderer struct {
-	gcsClient *storage.Client
-	params    *params
-	req       *clouddeploy.RenderRequest
+	gcsClient         *storage.Client
+	aiPlatformService *aiplatform.Service
+	params            *params
+	req               *clouddeploy.RenderRequest
 }
 
 // process processes the Render params by generating the YAML representation of a
-// DeployModel params, optionally
-// the output GCS path to be used by the deploy params.
+// DeployModelRequest object.
 func (r *renderer) process(ctx context.Context) error {
 	fmt.Println("Processing render request")
 	res, err := r.render(ctx)
@@ -89,7 +88,7 @@ func (r *renderer) render(ctx context.Context) (*clouddeploy.RenderResult, error
 	}
 	fmt.Printf("Downloaded render input archive from %s\n", inURI)
 
-	out, err := r.renderDeployModelRequest(ctx)
+	out, err := r.renderDeployModelRequest()
 	if err != nil {
 		return nil, fmt.Errorf("error rendering deploy model params: %v", err)
 	}
@@ -109,28 +108,11 @@ func (r *renderer) render(ctx context.Context) (*clouddeploy.RenderResult, error
 	}, nil
 }
 
-func (r *renderer) addCommonMetadata(rs *clouddeploy.RenderResult) {
-	if rs.Metadata == nil {
-		rs.Metadata = map[string]string{}
-	}
-	rs.Metadata[clouddeploy.CustomTargetSourceMetadataKey] = aiDeployerSampleName
-	rs.Metadata[clouddeploy.CustomTargetSourceSHAMetadataKey] = clouddeploy.GitCommit
-}
-
-// renderDeployModelRequest generates a model definition
-func (r *renderer) renderDeployModelRequest(ctx context.Context) ([]byte, error) {
+// renderDeployModelRequest generates a DeployModelRequest object and returns its definition as a yaml-formatted string
+func (r *renderer) renderDeployModelRequest() ([]byte, error) {
 
 	if err := applyDeployParams(r.params.configPath); err != nil {
 		return nil, fmt.Errorf("cannot apply deploy parameters to configuration file: %v", err)
-	}
-
-	modelRegion, err := fetchRegionFromModel(r.params.model)
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse region from model name: %v", err)
-	}
-	aiplatformService, err := newAIPlatformService(ctx, modelRegion)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create aiplatform service: %v", err)
 	}
 
 	// blank deployed model template
@@ -145,7 +127,7 @@ func (r *renderer) renderDeployModelRequest(ctx context.Context) ([]byte, error)
 		return nil, fmt.Errorf("unable to parse configuration data into DeployModel object: %v", err)
 	}
 
-	model, err := fetchModel(aiplatformService, r.params.model)
+	model, err := fetchModel(r.aiPlatformService, r.params.model)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch model: %v", err)
 	}
@@ -189,6 +171,14 @@ func (r *renderer) renderDeployModelRequest(ctx context.Context) ([]byte, error)
 	request := &aiplatform.GoogleCloudAiplatformV1DeployModelRequest{DeployedModel: deployedModel, TrafficSplit: trafficSplit}
 
 	return yaml.Marshal(request)
+}
+
+func (r *renderer) addCommonMetadata(rs *clouddeploy.RenderResult) {
+	if rs.Metadata == nil {
+		rs.Metadata = map[string]string{}
+	}
+	rs.Metadata[clouddeploy.CustomTargetSourceMetadataKey] = aiDeployerSampleName
+	rs.Metadata[clouddeploy.CustomTargetSourceSHAMetadataKey] = clouddeploy.GitCommit
 }
 
 func applyDeployParams(configPath string) error {

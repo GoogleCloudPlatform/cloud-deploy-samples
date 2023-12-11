@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
+	"google.golang.org/api/aiplatform/v1"
 	"os"
 	"strconv"
 	"strings"
@@ -38,6 +39,13 @@ const (
 	configPathKey = "CLOUD_DEPLOY_customTarget_vertexAIConfigurationPath"
 )
 
+// deploy parameters that the custom target requires to be present and provided during render and deploy operations.
+const (
+	modelDPKey = "customTarget/vertexAIModel"
+
+	endpointDPKey = "customTarget/vertexAIEndpoint"
+)
+
 var addAliasesMode bool
 
 // requestHandler interface provides methods for handling the Cloud Deploy params.
@@ -47,20 +55,23 @@ type requestHandler interface {
 }
 
 // createRequestHandler creates a requestHandler for the provided Cloud Deploy request.
-func createRequestHandler(cloudDeployRequest interface{}, params *params, gcsClient *storage.Client) (requestHandler, error) {
+func createRequestHandler(cloudDeployRequest interface{}, params *params, gcsClient *storage.Client, service *aiplatform.Service) (requestHandler, error) {
+
 	switch r := cloudDeployRequest.(type) {
 	case *clouddeploy.RenderRequest:
 		return &renderer{
-			req:       r,
-			params:    params,
-			gcsClient: gcsClient,
+			req:               r,
+			params:            params,
+			gcsClient:         gcsClient,
+			aiPlatformService: service,
 		}, nil
 
 	case *clouddeploy.DeployRequest:
 		return &deployer{
-			req:       r,
-			params:    params,
-			gcsClient: gcsClient,
+			req:               r,
+			params:            params,
+			gcsClient:         gcsClient,
+			aiPlatformService: service,
 		}, nil
 
 	default:
@@ -95,10 +106,30 @@ func determineParams() (*params, error) {
 		replicaCount = 0
 	}
 
+	model, found := os.LookupEnv(modelEnvKey)
+	if !found {
+		fmt.Printf("Required environment variable %s not found. This variable is derived from deploy parameter: %s, please verify that a valid Vertex AI model resource name was provided through this deploy parameter.\n", modelEnvKey, modelDPKey)
+		return nil, fmt.Errorf("required environment variable %s not found", modelEnvKey)
+	}
+	if model == "" {
+		fmt.Printf("environment variable %s is empty. This variable is derived from deploy parameter: %s, please verify that a valid Vertex AI model resource name was provided through this deploy parameter.\n", modelEnvKey, modelDPKey)
+		return nil, fmt.Errorf("environment variable %s contains empty string", modelEnvKey)
+	}
+
+	endpoint, found := os.LookupEnv(endpointEnvKey)
+	if !found {
+		fmt.Printf("Required environment variable %s not found. This variable is derived from deploy parameter: %s, please verify that a valid Vertex AI model resource name was provided through this deploy parameter.\n", endpointEnvKey, endpointDPKey)
+		return nil, fmt.Errorf("required environment variable %s not found", modelEnvKey)
+	}
+	if model == "" {
+		fmt.Printf("environment variable %s is empty. This variable is derived from deploy parameter: %s, please verify that a valid Vertex AI model resource name was provided through this deploy parameter.\n", endpointEnvKey, endpointDPKey)
+		return nil, fmt.Errorf("environment variable %s contains empty string", modelEnvKey)
+	}
+
 	return &params{
+		model:           model,
+		endpoint:        endpoint,
 		minReplicaCount: int64(replicaCount),
-		model:           os.Getenv(modelEnvKey),
-		endpoint:        os.Getenv(endpointEnvKey),
 		configPath:      os.Getenv(configPathKey),
 	}, nil
 }
