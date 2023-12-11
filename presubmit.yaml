@@ -1,0 +1,6 @@
+# Cloud Build YAML to run all presubmit tasks
+steps:
+  - name: golang
+    script: |
+      go build -C custom-targets/util/applysetters
+      go build -C custom-targets/util/clouddeploy
