@@ -1,0 +1,6 @@
+# All steps that should be run before allowing a PR to merge
+steps:
+  - name: golang
+    script: |
+      go build -C custom-targets/util/applysetters
+      go build -C custom-targets/util/clouddeploy
