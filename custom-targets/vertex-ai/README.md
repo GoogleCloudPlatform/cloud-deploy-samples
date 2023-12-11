@@ -19,13 +19,13 @@ This custom deployer sample require certain [Deploy Parameters](https://cloud.go
 
 The table below lists the supported deploy parameters, whether the parameter is required, and the recommended resource where the parameter should be defined.
 
-| Parameter               | Required | Recommended Location | Description                                                                                                                                     | 
-|-------------------------|----------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
-| customTarget/vertexAIModel           | Yes      | Release              | Model to deploy. Format is "projects/{project}/locations/{location}/models/{modelId}"                                                           |
-| customTarget/vertexAIMinReplicaCount | Yes      | Release              | The minimum replica count to assign for the deployed model.                                                                                     |
-| customTarget/vertexAIEndpoint        | Yes      | Target               | The Vertex AI endpoint where the model will be deployed to. Format is "projects/{project}/locations/{location}/endpoints/{endpointId}"          |
-| customTarget/vertexAIConfigurationPath      | No       | Target               | Path to the DeployedModel configuration in the Cloud Deploy Release archive. If not provided then defaults to the root directory of the archive |
-| customTarget/vertexAIAliases         | No       | Target               | Comma-separated list of aliases that should be assign to a model after a deployment. Required when using the add alias option for the deployer. |
+| Parameter               | Required | Recommended Location | Description                                                                                                                                                                         | 
+|-------------------------|----------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| customTarget/vertexAIModel           | Yes      | Release              | Model to deploy. Format is "projects/{project}/locations/{location}/models/{modelId}"                                                                                               |
+| customTarget/vertexAIMinReplicaCount | Yes      | Release              | The minimum replica count to assign for the deployed model.                                                                                                                         |
+| customTarget/vertexAIEndpoint        | Yes      | Target               | The Vertex AI endpoint where the model will be deployed to. Format is "projects/{project}/locations/{location}/endpoints/{endpointId}"                                              |
+| customTarget/vertexAIConfigurationPath      | No       | -                    | Path to the DeployedModel configuration in the Cloud Deploy Release archive. If not provided then defaults to file `deployedModel.yaml` in the root directory of the archive |
+| customTarget/vertexAIAliases         | No       | Target               | Comma-separated list of aliases that should be assign to a model after a deployment. Required when using the add alias option for the deployer.                                     |
 
 ### Per-target configuration
 
