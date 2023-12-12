@@ -10,7 +10,11 @@ In this quickstart you will:
 2. Define a Cloud Deploy delivery pipeline, custom target type for Vertex AI, and one target.
 3. Create a Cloud Deploy release and rollout to deploy a Vertex AI model to the dev-endpoint target.
 
-## 1. Environment variables
+## 1. Clone Repository
+
+Clone this repository and navigate to the quickstart directory (`cloud-deploy-samples/custom-targets/vertex-ai/quickstart`) since the commands provided expect to be executed from that directory.
+
+## 2. Environment variables
 
 To simplify the commands in this quickstart, set the following environment variables with your values:
 
@@ -19,7 +23,7 @@ export PROJECT_ID="YOUR_PROJECT_ID"
 export REGION="YOUR_REGION"
 ```
 
-## 2. Prerequisites
+## 3. Prerequisites
 
 [Install](https://cloud.google.com/sdk/docs/install) the latest version of the Google Cloud CLI
 
@@ -52,7 +56,7 @@ The default service account, `{project_num}-compute@developer.gserviceaccount.co
    ```
 
 
-## 3. Import a model into Model Registry
+## 4. Import a model into Model Registry
 
 We will upload a pre-existing model to Model Registry before deploying it with Cloud Deploy.
 The `gcloud ai models upload` command requires a cloud storage path to the trained model, and a
@@ -73,7 +77,7 @@ For the docker image, we use a Cloud AI optimized version of tensorflow: [tf_opt
 If this is your first time using Vertex AI in this project, this operation will
 take 10 minutes or so.
 
-## 4. Create a Vertex AI Endpoint
+## 5. Create a Vertex AI Endpoint
 
 Create a Vertex AI endpoint using the following commands:
 
@@ -87,7 +91,7 @@ take 5 minutes or so.
 
 The endpoint id will be used to refer to the endpoint, rather than the display name.
 
-## 5. Create delivery pipeline, target, and custom target type
+## 6. Create delivery pipeline, target, and custom target type
 
 Replace placeholders in `clouddeploy.yaml` with actual values:
 ```shell
@@ -101,7 +105,7 @@ Apply the Cloud Deploy configuration defined in `clouddeploy.yaml`:
 gcloud deploy apply --file=clouddeploy.yaml --project=$PROJECT_ID --region=$REGION
 ```
 
-## 6. Build and Register a Custom Target Type for Vertex AI
+## 7. Build and Register a Custom Target Type for Vertex AI
 
 From within the `quickstart` directory, run this command to build the Vertex AI model deployer image and
 install the custom target resources:
@@ -112,7 +116,7 @@ install the custom target resources:
 
 For information about the `build_and_register.sh` script, see the [README](../README.md#build)
 
-## 7. Create a release and rollout
+## 8. Create a release and rollout
 
 Create a Cloud Deploy release for the configuration defined in the `configuration` directory. This automatically
 creates a rollout that deploys the first model version to the target.
@@ -154,7 +158,7 @@ Run this command to filter only the render status of the release:
 gcloud deploy releases describe release-001 --delivery-pipeline=vertex-ai-cloud-deploy-pipeline --project=$PROJECT_ID --region=$REGION --format "(renderState)"
 ```
 
-## 8. Monitor rollout status
+## 9. Monitor rollout status
 
 In the [Cloud Deploy UI](https://cloud.google.com/deploy) for your project click on the
 `vertex-ai-cloud-deploy-pipeline` delivery pipeline. Here you can see the release created and the rollout to the target for the release.
@@ -174,7 +178,7 @@ After the rollout completes, you can inspect the deployed models and traffic spl
    ```
 
 
-## 9. Clean up
+## 10. Clean up
 
 To delete the endpoint after the quickstart, run the following commands:
 
