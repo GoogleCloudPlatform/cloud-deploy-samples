@@ -51,13 +51,11 @@ func do() error {
 	}
 
 	req, err := clouddeploy.DetermineRequest(ctx, gcsClient, []string{"CANARY"})
-
 	if err != nil {
 		return err
 	}
 
 	params, err := determineParams()
-
 	if err != nil {
 		return fmt.Errorf("unable to parse params: %v", err)
 	}
@@ -68,17 +66,14 @@ func do() error {
 	}
 
 	aiPlatformService, err := newAIPlatformService(ctx, aiPlatformRegion)
-
 	if err != nil {
 		return fmt.Errorf("unable to create aiplatform.Service object : %v", err)
 	}
 
 	handler, err := createRequestHandler(req, params, gcsClient, aiPlatformService)
-
 	if err != nil {
 		return fmt.Errorf("unable to create request handler: %v", err)
 	}
 
 	return handler.process(ctx)
-
 }

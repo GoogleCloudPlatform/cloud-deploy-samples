@@ -37,7 +37,6 @@ func poll(ctx context.Context, service *aiplatform.Service, op *aiplatform.Googl
 	opService := aiplatform.NewProjectsLocationsOperationsService(service)
 
 	_, err := opService.Get(op.Name).Do()
-
 	if err != nil {
 		return fmt.Errorf("unable to get operation")
 	}
@@ -45,19 +44,17 @@ func poll(ctx context.Context, service *aiplatform.Service, op *aiplatform.Googl
 	pollFunc := getWaitFunc(opService, op.Name, ctx)
 
 	err = wait.PollUntilContextTimeout(ctx, lroOperationTimeout, pollingTimeout, true, pollFunc)
-
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
 // getWaitFunc is a helper function that returns true if the specified operation has completed.
 func getWaitFunc(service *aiplatform.ProjectsLocationsOperationsService, name string, ctx context.Context) wait.ConditionWithContextFunc {
 	return func(ctx context.Context) (done bool, err error) {
-
 		op, err := service.Get(name).Do()
-
 		if err != nil {
 			return false, err
 		}
@@ -67,7 +64,6 @@ func getWaitFunc(service *aiplatform.ProjectsLocationsOperationsService, name st
 		}
 
 		return false, nil
-
 	}
 }
 
