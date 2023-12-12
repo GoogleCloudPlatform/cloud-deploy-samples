@@ -89,7 +89,7 @@ Create a Vertex AI endpoint using the following commands:
 If this is your first time using Vertex AI in this project, this operation will
 take 5 minutes or so.
 
-The endpoint id will be used to refer to the endpoint, rather than the display name.
+The endpoint ID will be used to refer to the endpoint, rather than the display name.
 
 ## 6. Create delivery pipeline, target, and custom target type
 
