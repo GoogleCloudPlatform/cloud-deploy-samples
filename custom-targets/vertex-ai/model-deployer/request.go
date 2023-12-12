@@ -31,19 +31,16 @@ import (
 const (
 	minReplicaCountEnvKey = "CLOUD_DEPLOY_customTarget_vertexAIMinReplicaCount"
 	modelEnvKey           = "CLOUD_DEPLOY_customTarget_vertexAIModel"
-
-	endpointEnvKey = "CLOUD_DEPLOY_customTarget_vertexAIEndpoint"
-
-	aliasEnvKey = "CLOUD_DEPLOY_customTarget_vertexAIAliases"
-
-	configPathKey = "CLOUD_DEPLOY_customTarget_vertexAIConfigurationPath"
+	endpointEnvKey        = "CLOUD_DEPLOY_customTarget_vertexAIEndpoint"
+	aliasEnvKey           = "CLOUD_DEPLOY_customTarget_vertexAIAliases"
+	configPathKey         = "CLOUD_DEPLOY_customTarget_vertexAIConfigurationPath"
 )
 
 // deploy parameters that the custom target requires to be present and provided during render and deploy operations.
 const (
-	modelDPKey = "customTarget/vertexAIModel"
-
+	modelDPKey    = "customTarget/vertexAIModel"
 	endpointDPKey = "customTarget/vertexAIEndpoint"
+	aliasDPKey    = "customTarget/vertexAIAliases"
 )
 
 var addAliasesMode bool
@@ -158,7 +155,7 @@ func newAliasHandler(gcsClient *storage.Client) (requestHandler, error) {
 
 	aliasParameter := os.Getenv(aliasEnvKey)
 	if len(aliasParameter) == 0 {
-		return nil, fmt.Errorf("when 'add aliases mode' is enabled', at least one alias needs to be passed to the custom action through %s deploy parameter", aliasEnvKey)
+		return nil, fmt.Errorf("when 'add aliases mode' is enabled', at least one alias needs to be passed to the custom action through %s deploy parameter", aliasDPKey)
 	}
 
 	aliases := strings.Split(aliasParameter, ",")

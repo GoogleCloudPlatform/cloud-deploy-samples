@@ -41,9 +41,9 @@ func deployModelFromManifest(path string) (*aiplatform.GoogleCloudAiplatformV1De
 	return deployModelRequest, nil
 }
 
-// determinePreviousModel queries the provided Vertex AI endpoint to determine the model that was previously
+// fetchPreviousModel queries the provided Vertex AI endpoint to determine the model that was previously
 // deployed.
-func determinePreviousModel(service *aiplatform.Service, endpointName, currentModel string) (string, error) {
+func fetchPreviousModel(service *aiplatform.Service, endpointName, currentModel string) (string, error) {
 	endpoint, err := service.Projects.Locations.Endpoints.Get(endpointName).Do()
 	if err != nil {
 		return "", fmt.Errorf("unable to fetch endpoint: %v", err)
@@ -62,7 +62,7 @@ func determinePreviousModel(service *aiplatform.Service, endpointName, currentMo
 		return "", fmt.Errorf("unable to resolve previous deployed currentModel to canary against. Not including the current currentModel to be deployed, the endpoint has %d deployed models but expected only one", len(deployedModels))
 	}
 
-	firstModel := []*aiplatform.GoogleCloudAiplatformV1DeployedModel{}
+	var firstModel []*aiplatform.GoogleCloudAiplatformV1DeployedModel
 
 	for _, dm := range deployedModels {
 		firstModel = append(firstModel, dm)
@@ -87,8 +87,8 @@ func resolveModelWithVersion(model *aiplatform.GoogleCloudAiplatformV1Model) str
 	return fmt.Sprintf("%s@%s", model.Name, model.VersionId)
 }
 
-// extracts the region from the model region name.
-func fetchRegionFromModel(modelName string) (string, error) {
+// regionFromModel extracts the region from the model region name.
+func regionFromModel(modelName string) (string, error) {
 	matches := modelRegex.FindStringSubmatch(modelName)
 	if len(matches) == 0 {
 		return "", fmt.Errorf("unable to parse model name")
@@ -98,7 +98,7 @@ func fetchRegionFromModel(modelName string) (string, error) {
 }
 
 // extracts the region from the endpoint resource name.
-func fetchRegionFromEndpoint(endpointName string) (string, error) {
+func regionFromEndpoint(endpointName string) (string, error) {
 	matches := endpointRegex.FindStringSubmatch(endpointName)
 	if len(matches) == 0 {
 		return "", fmt.Errorf("unable to parse endpoint name")
@@ -127,53 +127,6 @@ func fetchModel(service *aiplatform.Service, modelName string) (*aiplatform.Goog
 	return model, nil
 }
 
-// validateRequest performs validation on the request.
-func validateRequest(modelNameFromDeployParameter, endpointName string, minReplicaCountParameter int64, deployedModel *aiplatform.GoogleCloudAiplatformV1DeployedModel) error {
-	modelRegion, err := fetchRegionFromModel(modelNameFromDeployParameter)
-	if err != nil {
-		return fmt.Errorf("unable to parse region from model: %v", err)
-	}
-
-	endpointRegion, err := fetchRegionFromEndpoint(endpointName)
-	if err != nil {
-		return fmt.Errorf("unable to parse region from endpoint: %v", err)
-	}
-
-	if endpointRegion != modelRegion {
-		return fmt.Errorf("The model to be deployed must be in the same region as the endpoint. Copy the model to the region the  endpoint is located, or make an endpoint in the same region as the model")
-	}
-
-	if err = verifyModelNameNotDefinedInConfig(deployedModel); err != nil {
-		return err
-	}
-
-	if err = verifyMinReplicaCountHasNoConflicts(deployedModel, minReplicaCountParameter); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// verifyMinReplicaCountHasNoConflicts ensures that minReplicaCount value for the deployed model is defined either in the provided `deployedModel.yaml` file
-// or as a deploy parameter, but not both.
-func verifyMinReplicaCountHasNoConflicts(deployedModel *aiplatform.GoogleCloudAiplatformV1DeployedModel, deployParameterValue int64) error {
-
-	configValue := minReplicaCountFromConfig(deployedModel)
-
-	// checks if minReplicaCount is not defined either in deploy parameter or config file
-	if configValue == deployParameterValue {
-		if configValue == 0 {
-			return fmt.Errorf("minReplicaCount must either be defined in the config file or provided to the render operation through a deploy parameter using 'vertexAIMinReplicaCount' key")
-		}
-	}
-
-	// only other valid format is if either but not both are 0
-	if configValue == 0 || deployParameterValue == 0 {
-		return nil
-	}
-	return fmt.Errorf("the minReplicaCount parameter is defined in both the provided config file and as a deploy parameter and both values differ from each other, please define minReplicaCount in the config file or as a deploy-parameter")
-}
-
 // minReplicaCountFromConfig returns the minReplicaCount value from the provided configuration file.
 func minReplicaCountFromConfig(deployedModel *aiplatform.GoogleCloudAiplatformV1DeployedModel) int64 {
 	if deployedModel.DedicatedResources != nil {
@@ -182,18 +135,57 @@ func minReplicaCountFromConfig(deployedModel *aiplatform.GoogleCloudAiplatformV1
 	return 0
 }
 
-// verifyModelNameNotDefinedInConfig ensures the model name is not defined in the configuration, it can only be defined as
-// as deploy parameter
-func verifyModelNameNotDefinedInConfig(deployedModel *aiplatform.GoogleCloudAiplatformV1DeployedModel) error {
+// deployModel performs the DeployModel request and awaits the resulting operation until it completes, it times out or an error occurs.
+func deployModel(ctx context.Context, aiPlatformService *aiplatform.Service, endpoint string, request *aiplatform.GoogleCloudAiplatformV1DeployModelRequest) error {
+	op, err := aiPlatformService.Projects.Locations.Endpoints.DeployModel(endpoint, request).Do()
 
-	if deployedModel.Model != "" {
-		return fmt.Errorf("model to deployed must be supplied as a deploy parameter and not in the config file")
+	if err != nil {
+		return fmt.Errorf("unable to deploy model: %v", err)
 	}
 
-	if deployedModel.ModelVersionId != "" {
-		return fmt.Errorf("the model version id to deploy must be supplied as part of the vertexAIModel deployparamater containing the model to be deployed")
+	return poll(ctx, aiPlatformService, op)
+}
+
+// undeployNoTrafficModels fetches the Vertex AI endpoint and und-deploys all the models that have no traffic routed to them.
+func undeployNoTrafficModels(ctx context.Context, aiPlatformService *aiplatform.Service, endpointName string) error {
+	endpoint, err := aiPlatformService.Projects.Locations.Endpoints.Get(endpointName).Do()
+	if err != nil {
+		return fmt.Errorf("unable to fetch endpoint where model was deployed: %v", err)
 	}
 
-	return nil
+	var modelsToUndeploy = map[string]bool{}
+	for _, dm := range endpoint.DeployedModels {
+		modelsToUndeploy[dm.Id] = true
+	}
 
+	for id, split := range endpoint.TrafficSplit {
+
+		// model does not get un-deployed if its configured to receive  traffic
+		if split != 0 {
+			delete(modelsToUndeploy, id)
+		}
+	}
+
+	undeployedCount := 0
+	err = nil
+	var lros []*aiplatform.GoogleLongrunningOperation
+	for id, _ := range modelsToUndeploy {
+		undeployRequest := &aiplatform.GoogleCloudAiplatformV1UndeployModelRequest{DeployedModelId: id}
+		lro, lroErr := aiPlatformService.Projects.Locations.Endpoints.UndeployModel(endpointName, undeployRequest).Do()
+		if err != nil {
+			fmt.Printf("error undeploying model: %v\n", err)
+			err = lroErr
+			undeployedCount += 1
+		} else {
+			lros = append(lros, lro)
+		}
+	}
+
+	for pollErr := range pollChan(ctx, aiPlatformService, lros...) {
+		if pollErr != nil {
+			fmt.Printf("Error in undeploy model operation: %v", err)
+			err = pollErr
+		}
+	}
+	return err
 }

@@ -76,7 +76,7 @@ func (aa aliasAssigner) process(ctx context.Context) error {
 
 	modelName := deployedModelRequest.DeployedModel.Model
 
-	modelRegion, err := fetchRegionFromModel(modelName)
+	modelRegion, err := regionFromModel(modelName)
 	if err != nil {
 		return fmt.Errorf("unable to obtain region where deployed model is located: %v", err)
 	}

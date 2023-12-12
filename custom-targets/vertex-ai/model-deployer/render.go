@@ -115,13 +115,13 @@ func (r *renderer) renderDeployModelRequest() ([]byte, error) {
 		return nil, fmt.Errorf("cannot apply deploy parameters to configuration file: %v", err)
 	}
 
-	// blank deployed model template
-	deployedModel := &aiplatform.GoogleCloudAiplatformV1DeployedModel{}
-
 	configuration, err := loadConfigurationFile(r.params.configPath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to obtain configuration data: %v", err)
 	}
+
+	// blank deployed model template
+	deployedModel := &aiplatform.GoogleCloudAiplatformV1DeployedModel{}
 
 	if err = yaml.Unmarshal(configuration, deployedModel); err != nil {
 		return nil, fmt.Errorf("unable to parse configuration data into DeployModel object: %v", err)
@@ -162,6 +162,7 @@ func (r *renderer) renderDeployModelRequest() ([]byte, error) {
 
 	percentage := int64(r.req.Percentage)
 	trafficSplit := map[string]int64{}
+	// "0" is a stand-in to refer to the current model being deployed
 	trafficSplit["0"] = percentage
 
 	if percentage != 100 {
@@ -223,4 +224,67 @@ func loadConfigurationFile(configPath string) ([]byte, error) {
 		return os.ReadFile(filePath)
 	}
 	return nil, nil
+}
+
+// validateRequest performs validation on the request.
+func validateRequest(modelNameFromDeployParameter, endpointName string, minReplicaCountParameter int64, deployedModel *aiplatform.GoogleCloudAiplatformV1DeployedModel) error {
+	modelRegion, err := regionFromModel(modelNameFromDeployParameter)
+	if err != nil {
+		return fmt.Errorf("unable to parse region from model: %v", err)
+	}
+
+	endpointRegion, err := regionFromEndpoint(endpointName)
+	if err != nil {
+		return fmt.Errorf("unable to parse region from endpoint: %v", err)
+	}
+
+	if endpointRegion != modelRegion {
+		return fmt.Errorf("The model to be deployed must be in the same region as the endpoint. Copy the model to the region the  endpoint is located, or make an endpoint in the same region as the model")
+	}
+
+	if err = verifyModelNameNotDefinedInConfig(deployedModel); err != nil {
+		return err
+	}
+
+	if err = verifyMinReplicaCountHasNoConflicts(deployedModel, minReplicaCountParameter); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// verifyMinReplicaCountHasNoConflicts ensures that minReplicaCount value for the deployed model is defined either in the provided `deployedModel.yaml` file
+// or as a deploy parameter, but not both.
+func verifyMinReplicaCountHasNoConflicts(deployedModel *aiplatform.GoogleCloudAiplatformV1DeployedModel, deployParameterValue int64) error {
+
+	configValue := minReplicaCountFromConfig(deployedModel)
+
+	// checks if minReplicaCount is not defined either in deploy parameter or config file
+	if configValue == deployParameterValue {
+		if configValue == 0 {
+			return fmt.Errorf("minReplicaCount must either be defined in the config file or provided to the render operation through a deploy parameter using 'vertexAIMinReplicaCount' key")
+		}
+	}
+
+	// only other valid format is if either but not both are 0
+	if configValue == 0 || deployParameterValue == 0 {
+		return nil
+	}
+	return fmt.Errorf("the minReplicaCount parameter is defined in both the provided config file and as a deploy parameter and both values differ from each other, please define minReplicaCount in the config file or as a deploy-parameter")
+}
+
+// verifyModelNameNotDefinedInConfig ensures the model name is not defined in the configuration, it can only be defined as
+// as deploy parameter
+func verifyModelNameNotDefinedInConfig(deployedModel *aiplatform.GoogleCloudAiplatformV1DeployedModel) error {
+
+	if deployedModel.Model != "" {
+		return fmt.Errorf("model to deployed must be supplied as a deploy parameter and not in the config file")
+	}
+
+	if deployedModel.ModelVersionId != "" {
+		return fmt.Errorf("the model version id to deploy must be supplied as part of the vertexAIModel deployparamater containing the model to be deployed")
+	}
+
+	return nil
+
 }

@@ -132,17 +132,11 @@ func (d *deployer) applyModel(ctx context.Context, localManifest string) ([]byte
 		}
 	}
 
-	op, err := d.aiPlatformService.Projects.Locations.Endpoints.DeployModel(d.params.endpoint, deployModelRequest).Do()
-
-	if err != nil {
+	if err := deployModel(ctx, d.aiPlatformService, d.params.endpoint, deployModelRequest); err != nil {
 		return nil, fmt.Errorf("unable to deploy model: %v", err)
 	}
 
-	if err := poll(ctx, d.aiPlatformService, op); err != nil {
-		return nil, err
-	}
-
-	if err := d.undeploy(ctx); err != nil {
+	if err := undeployNoTrafficModels(ctx, d.aiPlatformService, d.params.endpoint); err != nil {
 		return nil, fmt.Errorf("unable to undeploy models from endpoint: %v", err)
 	}
 
@@ -152,7 +146,7 @@ func (d *deployer) applyModel(ctx context.Context, localManifest string) ([]byte
 // makeManifestChangesForCanary generates a traffic split configuration such that traffic is routed to exactly two models:
 // the new model being introduced, and the model that was previously deployed.
 func (d *deployer) makeManifestChangesForCanary(deployModelRequest *aiplatform.GoogleCloudAiplatformV1DeployModelRequest) error {
-	previousModel, err := determinePreviousModel(d.aiPlatformService, d.params.endpoint, deployModelRequest.DeployedModel.Model)
+	previousModel, err := fetchPreviousModel(d.aiPlatformService, d.params.endpoint, deployModelRequest.DeployedModel.Model)
 	if err != nil {
 		return fmt.Errorf("unable to get previous model to canary against: %v", err)
 	}
@@ -164,48 +158,4 @@ func (d *deployer) makeManifestChangesForCanary(deployModelRequest *aiplatform.G
 	deployModelRequest.TrafficSplit[previousModel] = previousPercentage
 
 	return nil
-}
-
-// undeploy fetches the Vertex AI endpoint and und-deploys all the models that have no traffic routed to them.
-func (d *deployer) undeploy(ctx context.Context) error {
-	endpoint, err := d.aiPlatformService.Projects.Locations.Endpoints.Get(d.params.endpoint).Do()
-	if err != nil {
-		return fmt.Errorf("unable to fetch endpoint where model was deployed: %v", err)
-	}
-
-	var modelsToUndeploy = map[string]bool{}
-	for _, dm := range endpoint.DeployedModels {
-		modelsToUndeploy[dm.Id] = true
-	}
-
-	for id, split := range endpoint.TrafficSplit {
-
-		// model does not get un-deployed if its configured to receive  traffic
-		if split != 0 {
-			delete(modelsToUndeploy, id)
-		}
-	}
-
-	undeployedCount := 0
-	err = nil
-	var lros []*aiplatform.GoogleLongrunningOperation
-	for id, _ := range modelsToUndeploy {
-		undeployRequest := &aiplatform.GoogleCloudAiplatformV1UndeployModelRequest{DeployedModelId: id}
-		lro, lroErr := d.aiPlatformService.Projects.Locations.Endpoints.UndeployModel(d.params.endpoint, undeployRequest).Do()
-		if err != nil {
-			fmt.Printf("error undeploying model: %v\n", err)
-			err = lroErr
-			undeployedCount += 1
-		} else {
-			lros = append(lros, lro)
-		}
-	}
-
-	for pollErr := range pollChan(ctx, d.aiPlatformService, lros...) {
-		if pollErr != nil {
-			fmt.Printf("Error in undeploy model operation: %v", err)
-			err = pollErr
-		}
-	}
-	return err
 }

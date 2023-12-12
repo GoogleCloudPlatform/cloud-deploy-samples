@@ -60,7 +60,7 @@ func do() error {
 		return fmt.Errorf("unable to parse params: %v", err)
 	}
 
-	aiPlatformRegion, err := fetchRegionFromModel(params.model)
+	aiPlatformRegion, err := regionFromModel(params.model)
 	if err != nil {
 		return fmt.Errorf("unable to parse region from model resource name: %v", err)
 	}
