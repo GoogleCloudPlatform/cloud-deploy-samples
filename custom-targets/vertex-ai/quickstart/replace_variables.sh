@@ -33,9 +33,9 @@ IMAGE_SHA=$(gcloud -q artifacts docker images describe "${AR_REPO}/${_CT_IMAGE_N
 
 
 # replace variables in clouddeploy.yaml with actual values
-#sed -i "s/\$PROJECT_ID/${PROJECT}/g" clouddeploy.yaml
-#sed -i "s/\$REGION/${REGION}/g" clouddeploy.yaml
-#sed -i "s/\$ENDPOINT_ID/${ENDPOINT}/g" clouddeploy.yaml
+sed -i "s/\$PROJECT_ID/${PROJECT}/g" clouddeploy.yaml
+sed -i "s/\$REGION/${REGION}/g" clouddeploy.yaml
+sed -i "s/\$ENDPOINT_ID/${ENDPOINT}/g" clouddeploy.yaml
 
 # replace variables in configuration/skaffold.yaml with actual values
 sed -i "s/\$REGION/${REGION}/g" configuration/skaffold.yaml
