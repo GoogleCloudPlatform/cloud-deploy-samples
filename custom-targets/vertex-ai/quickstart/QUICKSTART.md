@@ -171,19 +171,32 @@ In the [Cloud Deploy UI](https://cloud.google.com/deploy) for your project click
 
 You can also describe the rollout created using the following command:
 
-   ```shell
-   gcloud deploy rollouts describe release-001-to-prod-endpoint-0001 --release=release-001 --delivery-pipeline=vertex-ai-cloud-deploy-pipeline --project=$PROJECT_ID --region=$REGION
-   ```
+```shell
+gcloud deploy rollouts describe release-001-to-prod-endpoint-0001 --release=release-001 --delivery-pipeline=vertex-ai-cloud-deploy-pipeline --project=$PROJECT_ID --region=$REGION
+```
 
 It will take up to 15 minutes for the model to fully deploy.
 
 After the rollout completes, you can inspect the deployed models and traffic splits of the endpoint with `gcloud`
 
-   ```shell
-    gcloud ai endpoints describe $ENDPOINT_ID --region $REGION --project $PROJECT_ID
-   ```
+```shell
+gcloud ai endpoints describe $ENDPOINT_ID --region $REGION --project $PROJECT_ID
+```
+## 10. Inspect aliases in the deployed model 
 
-## 10. Clean up
+Monitor the post-deploy operation by querying the rollout:
+
+```
+gcloud deploy rollouts describe release-001-to-prod-endpoint-0001 --release=release-001 --delivery-pipeline=vertex-ai-cloud-deploy-pipeline --project=$PROJECT_ID --region=$REGION --format "(phases[0].deploymentJobs.postdeployJob)"
+```
+
+After the post-deploy job has succeeded, you can then inspect the deployed model and view its currently assigned aliases. `prod` and `champion` should be assigned.
+
+```shell
+gcloud ai models describe test_model --region $REGION --project $PROJECT_ID --format "(versionAliases)"
+```
+
+## 11. Clean up
 
 To delete the endpoint after the quickstart, run the following commands:
 
@@ -199,17 +212,17 @@ gcloud ai endpoints undeploy-model $ENDPOINT_ID --region $REGION --project $PROJ
 
 Delete the endpoint:
 ```shell
- gcloud ai endpoints delete $ENDPOINT_ID --region $REGION --project $PROJECT_ID
+gcloud ai endpoints delete $ENDPOINT_ID --region $REGION --project $PROJECT_ID
 ```
 
 To delete the imported model:
 
 ```shell
- gcloud ai models delete test_model --region $REGION --project $PROJECT_ID
+gcloud ai models delete test_model --region $REGION --project $PROJECT_ID
 ```
 
 To delete Cloud Deploy resources:
 
 ```shell
- gcloud deploy delete --file=clouddeploy.yaml --force --project=$PROJECT_ID --region=$REGION
+gcloud deploy delete --file=clouddeploy.yaml --force --project=$PROJECT_ID --region=$REGION
 ```
