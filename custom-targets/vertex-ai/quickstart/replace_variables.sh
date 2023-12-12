@@ -1,10 +1,8 @@
 #!/bin/bash
 
-SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-
 export _CT_IMAGE_NAME=vertexai
 
-while getopts "p:r:" arg; do
+while getopts "p:r:e:" arg; do
   case "${arg}" in
     p)
       PROJECT="${OPTARG}"
@@ -35,11 +33,14 @@ IMAGE_SHA=$(gcloud -q artifacts docker images describe "${AR_REPO}/${_CT_IMAGE_N
 
 
 # replace variables in clouddeploy.yaml with actual values
-sed -i "s/\$PROJECT_ID/${PROJECT}/g" clouddeploy.yaml
-sed -i "s/\$REGION/${REGION}/g" clouddeploy.yaml
-sed -i "s/\$ENDPOINT_ID/${ENDPOINT}/g" clouddeploy.yaml
+#sed -i "s/\$PROJECT_ID/${PROJECT}/g" clouddeploy.yaml
+#sed -i "s/\$REGION/${REGION}/g" clouddeploy.yaml
+#sed -i "s/\$ENDPOINT_ID/${ENDPOINT}/g" clouddeploy.yaml
 
 # replace variables in configuration/skaffold.yaml with actual values
-sed -i "s/\$AR_REPO/${AR_REPO}/g" configuration/skaffold.yaml
+sed -i "s/\$REGION/${REGION}/g" configuration/skaffold.yaml
+sed -i "s/\$PROJECT_ID/${PROJECT}/g" configuration/skaffold.yaml
 sed -i "s/\$_CT_IMAGE_NAME/${_CT_IMAGE_NAME}/g" configuration/skaffold.yaml
-sed -i "s/\IMAGE_SHA/${IMAGE_SHA}/g" configuration/skaffold.yaml
+sed -i "s/\$IMAGE_SHA/${IMAGE_SHA}/g" configuration/skaffold.yaml
+
+
