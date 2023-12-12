@@ -19,13 +19,13 @@ This custom deployer sample require certain [Deploy Parameters](https://cloud.go
 
 The table below lists the supported deploy parameters, whether the parameter is required, and the recommended resource where the parameter should be defined.
 
-| Parameter               | Required | Recommended Location | Description                                                                                                                                                                         | 
-|-------------------------|----------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| customTarget/vertexAIModel           | Yes      | Release              | Model to deploy. Format is "projects/{project}/locations/{location}/models/{modelId}"                                                                                               |
-| customTarget/vertexAIMinReplicaCount | Yes      | Release              | The minimum replica count to assign for the deployed model.                                                                                                                         |
-| customTarget/vertexAIEndpoint        | Yes      | Target               | The Vertex AI endpoint where the model will be deployed to. Format is "projects/{project}/locations/{location}/endpoints/{endpointId}"                                              |
+| Parameter               | Required | Recommended Location | Description                                                                                                                                                                  | 
+|-------------------------|----------|----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| customTarget/vertexAIModel           | Yes      | Release              | Model to deploy. Format is "projects/{project}/locations/{location}/models/{modelId}"                                                                                        |
+| customTarget/vertexAIMinReplicaCount | Yes      | Release              | The minimum replica count to assign for the deployed model.                                                                                                                  |
+| customTarget/vertexAIEndpoint        | Yes      | Target               | The Vertex AI endpoint where the model will be deployed to. Format is "projects/{project}/locations/{location}/endpoints/{endpointId}"                                       |
 | customTarget/vertexAIConfigurationPath      | No       | -                    | Path to the DeployedModel configuration in the Cloud Deploy Release archive. If not provided then defaults to file `deployedModel.yaml` in the root directory of the archive |
-| customTarget/vertexAIAliases         | No       | Target               | Comma-separated list of aliases that should be assign to a model after a deployment. Required when using the add alias option for the deployer.                                     |
+| customTarget/vertexAIAliases         | No       | Target               | Comma-separated list of aliases that should be assigned to a model after a deployment. Required when using the add alias option for the deployer.                            |
 
 # Building the sample image
 The `build_and_register.sh` script within this `model-deployer` directory can be used to build the Vertex AI model deployer image and register a Cloud Deploy custom target type that references the image. To use the script run the following command:
@@ -90,7 +90,7 @@ on how this substitution works.
 1. The configuration file `deployedModel.yaml` is loaded, the deploy parameter `customTarget/vertexAIConfigurationPath` determines the location if its provided.
 2. Placeholders in the config file are set with the corresponding deploy parameter value if it exists.
 3. The field minReplicaCount is set using the provided `customTarget/vertexAIMinReplicaCount` deploy parameter value if its not provided in a `deployedModel.yaml` file.
-4. The model resource name passed using `customTarget/vertexAIModel` is adjusted to also include the model version id (if its not already provided) then this value is set in the request
+4. The model resource name passed using `customTarget/vertexAIModel` is adjusted to also include the model version ID (if it's not already provided) then this value is set in the request
 5. If this is a canary deployment, the traffic split is generated to route traffic between the new model and previous model. Since actual deployment can occur much later than when the rendering of this manifest occurs,
    we use a placeholder for the previously deployed model, and resolve the ID of the previous model during deploy time.
 6. The `DeployedModelRequest` object that is built is transformed into YAML and stored in Google Cloud Storage to be retrieved during deployment.
@@ -99,6 +99,6 @@ on how this substitution works.
 
 1. The `DeployedModelRequest` object is retrieved from Google Cloud Storage and parsed into a DeployedModelRequest object.
 2. If its a canary deployment, the `previous-model` placeholder in the traffic split portion of the request is replaced with the ID of actual previous model.
-3. The [deployModel](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.endpoints/deployModel) API method is called, using deploy parameter value `vertexAIEndpoint` to
+3. The [deployModel](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.endpoints/deployModel) API method is called, using deploy parameter value `customTarget/vertexAIEndpoint` to
    deploy to the desired endpoint.
-4. Once the model deployment has completed, the vertexAIEndpoint is queried for all deployed models and any model with zero traffic is undeployed.
+4. Once the model deployment has completed, the Vertex AI endpoint is queried for all deployed models and any model with zero traffic is un-deployed.
