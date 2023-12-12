@@ -18,7 +18,10 @@ metadata:
 serialPipeline:
   stages:
   - targetId: prod-endpoint
-
+    strategy:
+      standard:
+        postdeploy:
+          actions: ["add-aliases"]
 ---
 apiVersion: deploy.cloud.google.com/v1
 kind: Target
@@ -30,3 +33,4 @@ deployParameters:
   customTarget/vertexAIEndpoint: projects/$PROJECT_ID/locations/$REGION/endpoints/$ENDPOINT_ID
   customTarget/vertexAIConfigurationPath: "prod"
   customTarget/vertexAIMinReplicaCount: "3"
+  customTarget/vertexAIAliases: "prod,champion"

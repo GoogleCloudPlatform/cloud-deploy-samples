@@ -43,8 +43,8 @@ The script does the following on your behalf:
 
 # How the sample image works
 
-The sample image is built to handle both a render, deploy, and post-deploy request from Cloud Deploy. It also supports canary deployment by splitting endpoint traffic
-across multiple deployed models.
+The sample image is built to handle Cloud Deploy rendering and deploy operations, as well as canary deployment by splitting endpoint traffic
+across multiple deployed models. It also supports assigning aliases to a model after it has been successfully deployed to an endpoint.
 
 ## Per-target configuration
 
@@ -102,3 +102,14 @@ on how this substitution works.
 3. The [deployModel](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.endpoints/deployModel) API method is called, using deploy parameter value `customTarget/vertexAIEndpoint` to
    deploy to the desired endpoint.
 4. Once the model deployment has completed, the Vertex AI endpoint is queried for all deployed models and any model with zero traffic is un-deployed.
+
+
+## Assigning aliases using a post-deploy hook
+
+The custom image supports adding aliases to the deployed Vertex AI models, this functionality is meant to be
+invoked through a post-deploy hook. The post-deploy runs the custom image, and provides the `--add-aliases-mode` flag to activate this 
+functionality.
+
+Additional configuration for the Delivery Pipeline and `skaffold.yaml` provided to the release is needed to activate this feature.
+
+See the [quickstart](./quickstart/QUICKSTART.md) for an example.

@@ -91,21 +91,7 @@ take 5 minutes or so.
 
 The endpoint ID will be used to refer to the endpoint, rather than the display name.
 
-## 6. Create delivery pipeline, target, and custom target type
-
-Replace placeholders in `clouddeploy.yaml` with actual values:
-```shell
-sed -i "s/\$PROJECT_ID/${PROJECT_ID}/g" clouddeploy.yaml
-sed -i "s/\$REGION/${REGION}/g" clouddeploy.yaml
-sed -i "s/\$ENDPOINT_ID/${ENDPOINT_ID}/g" clouddeploy.yaml
-```
-Apply the Cloud Deploy configuration defined in `clouddeploy.yaml`:
-
-```shell
-gcloud deploy apply --file=clouddeploy.yaml --project=$PROJECT_ID --region=$REGION
-```
-
-## 7. Build and Register a Custom Target Type for Vertex AI
+## 6. Build and Register a Custom Target Type for Vertex AI
 
 From within the `quickstart` directory, run this command to build the Vertex AI model deployer image and
 install the custom target resources:
@@ -115,6 +101,26 @@ install the custom target resources:
 ```
 
 For information about the `build_and_register.sh` script, see the [README](../README.md#build)
+
+## 7. Create delivery pipeline, target, and skaffold
+
+Similarly, within the `quickstart` directory, run this second command to replace placeholders in `clouddeploy.yaml`
+and `configuration/skaffold.yaml` with actual values
+
+```shell
+./replace_variables.sh -p $PROJECT_ID -r $REGION -e $ENDPOINT_ID
+```
+
+The command does the following:
+1. Replaces the placeholders in `clouddeploy.yaml`
+2. Obtains the URL of the latest version of the custom image, built in step 6, and sets it in `configuration/skaffold.yaml`
+
+
+Lastly, apply the Cloud Deploy configuration defined in `clouddeploy.yaml`:
+
+```shell
+gcloud deploy apply --file=clouddeploy.yaml --project=$PROJECT_ID --region=$REGION
+```
 
 ## 8. Create a release and rollout
 
@@ -176,7 +182,6 @@ After the rollout completes, you can inspect the deployed models and traffic spl
    ```shell
     gcloud ai endpoints describe $ENDPOINT_ID --region $REGION --project $PROJECT_ID
    ```
-
 
 ## 10. Clean up
 

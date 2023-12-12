@@ -13,3 +13,4 @@ steps:
         docker build custom-targets/git-ops/git-deployer
         docker build custom-targets/helm/helm-deployer
         docker build custom-targets/terraform/terraform-deployer
+        docker build custom-targets/vertex-ai/model-deployer
