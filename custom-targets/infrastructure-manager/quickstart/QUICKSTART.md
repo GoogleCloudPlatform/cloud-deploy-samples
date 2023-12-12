@@ -125,7 +125,7 @@ The Terraform configuration is structured so the dev and prod root modules are d
 The path to the relevant configuration is provided as a deploy parameter on the delivery pipeline stage. Additionaly, the configuration expects `project_id` variable to be set, this is provided as a deploy parameter on the targets.
 
 ## 7. Check rollout status for dev target
-In the Cloud Deploy UI for your project click on the `im-network-pipeline` delivery pipeline. Here you can see the release created and the rollout to the dev target for the release.
+In the [Cloud Deploy UI](https://console.cloud.google.com/deploy/delivery-pipelines) for your project click on the `im-network-pipeline` delivery pipeline. Here you can see the release created and the rollout to the dev target for the release.
 
 You can also describe the rollout created using the following command:
 
@@ -153,7 +153,7 @@ gcloud deploy releases promote --release=release-001 --delivery-pipeline=im-netw
 ```
 
 ## 9. Check rollout status for prod target
-View the `im-network-pipeline` delivery pipeline in the Cloud Deploy UI.
+View the `im-network-pipeline` delivery pipeline in the [Cloud Deploy UI](https://console.cloud.google.com/deploy/delivery-pipelines).
 
 To describe the prod rollout run the following command:
 
