@@ -24,11 +24,14 @@ import (
 	cdapi "google.golang.org/api/clouddeploy/v1"
 )
 
+// aliasAssigner is responsible for applying model aliases during a post-deploy operation.
+
 type aliasAssigner struct {
 	gcsClient *storage.Client
 	request   *addAliasesRequest
 }
 
+// process applies model aliases during a post-deploy operation.
 func (aa aliasAssigner) process(ctx context.Context) error {
 	cdService, err := cdapi.NewService(ctx)
 	if err != nil {

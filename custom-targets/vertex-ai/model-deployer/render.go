@@ -173,6 +173,8 @@ func (r *renderer) renderDeployModelRequest() ([]byte, error) {
 	return yaml.Marshal(request)
 }
 
+// addCommonMetadata inserts metadata into the render result that should be present
+// regardless of render success or failure.
 func (r *renderer) addCommonMetadata(rs *clouddeploy.RenderResult) {
 	if rs.Metadata == nil {
 		rs.Metadata = map[string]string{}
@@ -181,12 +183,19 @@ func (r *renderer) addCommonMetadata(rs *clouddeploy.RenderResult) {
 	rs.Metadata[clouddeploy.CustomTargetSourceSHAMetadataKey] = clouddeploy.GitCommit
 }
 
+// applyDeployParams replaces templated parameters in the DeployedModel manifest with
+// the actual values derived from deploy parameters.
 func applyDeployParams(configPath string) error {
 	fullPath, _ := determineConfigFileLocation(configPath)
 	deployParams := clouddeploy.FetchDeployParameters()
 	return applysetters.ApplyParams(fullPath, deployParams)
 }
 
+// determineConfigFileLocation determines where to look for the `deployedModel`
+// configuration file. Since this file is optional, we shouldn't necessarily err
+// if the file is missing. However, if the configRelativePath is provided it means
+// that the user specified this value as a deploy-parameter and we should check
+// that we can open and read the file or fail the render if we cannot.
 func determineConfigFileLocation(configRelativePath string) (string, bool) {
 
 	configPath := defaultConfigPath

@@ -149,6 +149,8 @@ func (d *deployer) applyModel(ctx context.Context, localManifest string) ([]byte
 	return yaml.Marshal(deployModelRequest)
 }
 
+// makeManifestChangesForCanary generates a traffic split configuration such that traffic is routed to exactly two models:
+// the new model being introduced, and the model that was previously deployed.
 func (d *deployer) makeManifestChangesForCanary(deployModelRequest *aiplatform.GoogleCloudAiplatformV1DeployModelRequest) error {
 	previousModel, err := determinePreviousModel(d.aiPlatformService, d.params.endpoint, deployModelRequest.DeployedModel.Model)
 	if err != nil {
