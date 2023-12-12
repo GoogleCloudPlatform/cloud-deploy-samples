@@ -24,6 +24,8 @@ import (
 	"strings"
 )
 
+// deployModelFromManifest loads the file provided in `path` and returns the parsed DeployModelRequest
+// from the data.
 func deployModelFromManifest(path string) (*aiplatform.GoogleCloudAiplatformV1DeployModelRequest, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -39,7 +41,9 @@ func deployModelFromManifest(path string) (*aiplatform.GoogleCloudAiplatformV1De
 	return deployModelRequest, nil
 }
 
-func determinePreviousModel(service *aiplatform.Service, endpointName, model string) (string, error) {
+// determinePreviousModel queries the provided Vertex AI endpoint to determine the model that was previously
+// deployed.
+func determinePreviousModel(service *aiplatform.Service, endpointName, currentModel string) (string, error) {
 	endpoint, err := service.Projects.Locations.Endpoints.Get(endpointName).Do()
 	if err != nil {
 		return "", fmt.Errorf("unable to fetch endpoint: %v", err)
@@ -52,10 +56,10 @@ func determinePreviousModel(service *aiplatform.Service, endpointName, model str
 		deployedModels[modelNameWithVersion] = dm
 	}
 
-	delete(deployedModels, model)
+	delete(deployedModels, currentModel)
 
 	if len(deployedModels) != 1 {
-		return "", fmt.Errorf("unable to resolve previous deployed model to canary against. Not including the current model to be deployed, the endpoint has %d deployed models but expected only one", len(deployedModels))
+		return "", fmt.Errorf("unable to resolve previous deployed currentModel to canary against. Not including the current currentModel to be deployed, the endpoint has %d deployed models but expected only one", len(deployedModels))
 	}
 
 	firstModel := []*aiplatform.GoogleCloudAiplatformV1DeployedModel{}
@@ -66,6 +70,8 @@ func determinePreviousModel(service *aiplatform.Service, endpointName, model str
 	return firstModel[0].Id, nil
 }
 
+// resolveDeployedModelNameWithVersion returns the model resource name associated with the  provided DeployedModel
+// with its version ID attached.
 func resolveDeployedModelNameWithVersion(deployedModel *aiplatform.GoogleCloudAiplatformV1DeployedModel) string {
 	if strings.Contains(deployedModel.Model, "@") {
 		return deployedModel.Model
@@ -73,6 +79,7 @@ func resolveDeployedModelNameWithVersion(deployedModel *aiplatform.GoogleCloudAi
 	return fmt.Sprintf("%s@%s", deployedModel.Model, deployedModel.ModelVersionId)
 }
 
+// resolveModelWithVersion returns the model resource name its version ID attached.
 func resolveModelWithVersion(model *aiplatform.GoogleCloudAiplatformV1Model) string {
 	if strings.Contains(model.Name, "@") {
 		return model.Name
@@ -80,7 +87,7 @@ func resolveModelWithVersion(model *aiplatform.GoogleCloudAiplatformV1Model) str
 	return fmt.Sprintf("%s@%s", model.Name, model.VersionId)
 }
 
-// extracts the region from the model region name
+// extracts the region from the model region name.
 func fetchRegionFromModel(modelName string) (string, error) {
 	matches := modelRegex.FindStringSubmatch(modelName)
 	if len(matches) == 0 {
@@ -90,7 +97,7 @@ func fetchRegionFromModel(modelName string) (string, error) {
 	return matches[2], nil
 }
 
-// extracts the region from the endpoint resource name
+// extracts the region from the endpoint resource name.
 func fetchRegionFromEndpoint(endpointName string) (string, error) {
 	matches := endpointRegex.FindStringSubmatch(endpointName)
 	if len(matches) == 0 {
@@ -100,7 +107,7 @@ func fetchRegionFromEndpoint(endpointName string) (string, error) {
 	return matches[2], nil
 }
 
-// newAIPlatformService generates a Service that can make API calls in the specified region
+// newAIPlatformService generates a Service that can make API calls in the specified region.
 func newAIPlatformService(ctx context.Context, region string) (*aiplatform.Service, error) {
 	endPointOption := option.WithEndpoint(fmt.Sprintf("%s-aiplatform.googleapis.com", region))
 	regionalService, err := aiplatform.NewService(ctx, endPointOption)
@@ -111,6 +118,7 @@ func newAIPlatformService(ctx context.Context, region string) (*aiplatform.Servi
 	return regionalService, nil
 }
 
+// fetchModel calls the aiplatform API to fetch the Vertex AI model using the given model name.
 func fetchModel(service *aiplatform.Service, modelName string) (*aiplatform.GoogleCloudAiplatformV1Model, error) {
 	model, err := service.Projects.Locations.Models.Get(modelName).Do()
 	if err != nil {
@@ -119,6 +127,7 @@ func fetchModel(service *aiplatform.Service, modelName string) (*aiplatform.Goog
 	return model, nil
 }
 
+// validateRequest performs validation on the request.
 func validateRequest(modelNameFromDeployParameter, endpointName string, minReplicaCountParameter int64, deployedModel *aiplatform.GoogleCloudAiplatformV1DeployedModel) error {
 	modelRegion, err := fetchRegionFromModel(modelNameFromDeployParameter)
 	if err != nil {
@@ -145,6 +154,8 @@ func validateRequest(modelNameFromDeployParameter, endpointName string, minRepli
 	return nil
 }
 
+// verifyMinReplicaCountHasNoConflicts ensures that minReplicaCount value for the deployed model is defined either in the provided `deployedModel.yaml` file
+// or as a deploy parameter, but not both.
 func verifyMinReplicaCountHasNoConflicts(deployedModel *aiplatform.GoogleCloudAiplatformV1DeployedModel, deployParameterValue int64) error {
 
 	configValue := minReplicaCountFromConfig(deployedModel)
@@ -163,12 +174,16 @@ func verifyMinReplicaCountHasNoConflicts(deployedModel *aiplatform.GoogleCloudAi
 	return fmt.Errorf("the minReplicaCount parameter is defined in both the provided config file and as a deploy parameter and both values differ from each other, please define minReplicaCount in the config file or as a deploy-parameter")
 }
 
+// minReplicaCountFromConfig returns the minReplicaCount value from the provided configuration file.
 func minReplicaCountFromConfig(deployedModel *aiplatform.GoogleCloudAiplatformV1DeployedModel) int64 {
 	if deployedModel.DedicatedResources != nil {
 		return deployedModel.DedicatedResources.MinReplicaCount
 	}
 	return 0
 }
+
+// verifyModelNameNotDefinedInConfig ensures the model name is not defined in the configuration, it can only be defined as
+// as deploy parameter
 func verifyModelNameNotDefinedInConfig(deployedModel *aiplatform.GoogleCloudAiplatformV1DeployedModel) error {
 
 	if deployedModel.Model != "" {
