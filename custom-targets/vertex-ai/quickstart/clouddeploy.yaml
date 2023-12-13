@@ -31,6 +31,6 @@ customTarget:
   customTargetType: vertex-ai-endpoint
 deployParameters:
   customTarget/vertexAIEndpoint: projects/$PROJECT_ID/locations/$REGION/endpoints/$ENDPOINT_ID
-  customTarget/vertexAIConfigurationPath: "prod"
+  customTarget/vertexAIConfigurationPath: "prod/deployedModel.yaml"
   customTarget/vertexAIMinReplicaCount: "3"
   customTarget/vertexAIAliases: "prod,champion"

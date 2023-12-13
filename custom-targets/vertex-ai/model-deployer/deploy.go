@@ -48,7 +48,7 @@ func (d *deployer) process(ctx context.Context) error {
 			ResultStatus:   clouddeploy.DeployFailed,
 			FailureMessage: err.Error(),
 		}
-		d.addCommonMetadata(res)
+		d.addCommonMetadata(dr)
 		fmt.Println("Uploading failed deploy results")
 		rURI, err := d.req.UploadResult(ctx, d.gcsClient, dr)
 		if err != nil {

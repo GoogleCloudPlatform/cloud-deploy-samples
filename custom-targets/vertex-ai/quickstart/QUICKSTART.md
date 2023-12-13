@@ -45,8 +45,15 @@ The default service account, `{project_num}-compute@developer.gserviceaccount.co
        --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
        --role="roles/clouddeploy.jobRunner"
    ```
+2. `roles/clouddeploy.viewer` - required to access Cloud Deploy resources
 
-2. `roles/aiplatform.user` - required to access the models and deploy endpoints in the custom target
+   ```shell
+   gcloud projects add-iam-policy-binding $PROJECT_ID \
+       --member=serviceAccount:$(gcloud projects describe $PROJECT_ID \
+       --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
+       --role="roles/clouddeploy.viewer"
+   ```
+3. `roles/aiplatform.user` - required to access the models and deploy endpoints in the custom target
 
    ```shell
    gcloud projects add-iam-policy-binding $PROJECT_ID \

@@ -262,8 +262,10 @@ func verifyMinReplicaCountHasNoConflicts(deployedModel *aiplatform.GoogleCloudAi
 	// checks if minReplicaCount is not defined either in deploy parameter or config file
 	if configValue == deployParameterValue {
 		if configValue == 0 {
-			return fmt.Errorf("minReplicaCount must either be defined in the config file or provided to the render operation through a deploy parameter using 'vertexAIMinReplicaCount' key")
+			return fmt.Errorf("minReplicaCount must be a non-zero value defined either in the config file or provided to the render operation through a deploy parameter using 'vertexAIMinReplicaCount' key")
 		}
+		// if they are both equal the values are not conflicting.
+		return nil
 	}
 
 	// only other valid format is if either but not both are 0
