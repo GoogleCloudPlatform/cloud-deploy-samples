@@ -31,10 +31,10 @@ The table below lists the supported deploy parameters, whether the parameter is 
 | Parameter                              | Required | Recommended Location | Description                                                                                                                                                                   | 
 |----------------------------------------|----------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | customTarget/vertexAIModel             | Yes      | Release              | Model to deploy. Format is "projects/{project}/locations/{location}/models/{modelId}".                                                                                        |
-| customTarget/vertexAIMinReplicaCount   | No       | Target               | The minimum replica count to assign for the deployed model. This deploy parameter is required if its not provided in the `DeployedModel` YAML configuration.                  |
 | customTarget/vertexAIEndpoint          | Yes      | Target               | The Vertex AI endpoint where the model will be deployed to. Format is "projects/{project}/locations/{location}/endpoints/{endpointId}"                                        |
-| customTarget/vertexAIConfigurationPath | No       | -                    | Path to the DeployedModel configuration in the Cloud Deploy Release archive. If not provided then defaults to file `deployedModel.yaml` in the root directory of the archive. |
+| customTarget/vertexAIMinReplicaCount   | No       | Target               | The minimum replica count to assign for the deployed model. This deploy parameter is required if its not provided in the `DeployedModel` YAML configuration.                  |
 | customTarget/vertexAIAliases           | No       | Target               | Comma-separated list of aliases that should be assigned to a model after a deployment. Required when using the add alias option for the deployer.                             |
+| customTarget/vertexAIConfigurationPath | No       | -                    | Path to the DeployedModel configuration in the Cloud Deploy Release archive. If not provided then defaults to file `deployedModel.yaml` in the root directory of the archive. |
 
 # Building the sample image
 The `build_and_register.sh` script within this `vertex-ai` directory can be used to build the Vertex AI model deployer image and register a Cloud Deploy custom target type that references the image. To use the script run the following command:
@@ -61,7 +61,6 @@ In addition, this image can be used in a [Cloud Deploy post-deployment hook](htt
 In your configuration file, you can add placeholders for any values you want to substitute with the value of deploy parameters. These values will be substituted
 during the rendering step. See the [Cloud Deploy documentation](https://cloud.google.com/deploy/docs/parameters#add_placeholders) on deploy parameters for an explanation
 on how this substitution works.
-
 ## Render
 
 1. Download the configuration provided at Release creation time and locate the `DeployedModel` YAML file based on the deploy parameter `customTarget/vertexAIConfigurationPath`. (The default is already documented above)

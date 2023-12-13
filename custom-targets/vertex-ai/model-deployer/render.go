@@ -203,7 +203,7 @@ func determineConfigFileLocation(configRelativePath string) (string, bool) {
 	shouldErrOnMissingFile := false
 
 	if configRelativePath != "" {
-		configPath = fmt.Sprintf("%s/%s/deployedModel.yaml", srcPath, configRelativePath)
+		configPath = fmt.Sprintf("%s/%s", srcPath, configRelativePath)
 		shouldErrOnMissingFile = true
 	}
 
