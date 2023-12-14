@@ -79,7 +79,7 @@ gcloud -q beta builds submit --project="$PROJECT" --region="$REGION" \
     --config="${CLOUDBUILD_YAML}" \
     "${_CT_SRCDIR}"
 
-IMAGE_SHA=$(gcloud -q artifacts docker images describe "${AR_REPO}/${_CT_IMAGE_NAME}:latest" --format 'get(image_summary.digest)')
+IMAGE_SHA=$(gcloud -q artifacts docker images describe "${AR_REPO}/${_CT_IMAGE_NAME}:latest" --project "${PROJECT}" --format 'get(image_summary.digest)')
 
 TMPDIR=$(mktemp -d)
 trap 'rm -rf -- "${TMPDIR}"' EXIT
