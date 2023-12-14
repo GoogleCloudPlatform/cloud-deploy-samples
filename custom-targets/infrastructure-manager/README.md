@@ -7,6 +7,16 @@ Google Cloud support contract. To report bugs or request features in a Google
 Cloud product, please contact [Google Cloud
 support](https://cloud.google.com/support).**
 
+# Overview
+
+The Infrastructure Manager deployer allows you to use Cloud Deploy to control the application of Terraform configurations with Infrastructure Manager via a Cloud Deploy Delivery Pipeline.
+
+Example use cases:
+* Manage your infrastructure changes from the same interface as the rest of your application delivery
+* Control the progression of your infrastructure changes between multiple environments (dev, staging, production) either manually or via autmation.
+* Run tests after changes have been applied to validate their success
+* Use any other Cloud Deploy features alongside Infrastructure Manager: approvals, rollbacks, pre/post deployment hooks, etc.
+
 # Quickstart
 
 A quickstart that uses this sample is available [here](./quickstart/QUICKSTART.md).

@@ -116,6 +116,13 @@ Create a Cloud Deploy release for the configuration defined in the `configuratio
 gcloud deploy releases create release-001 --delivery-pipeline=im-network-pipeline --source=configuration --project=$PROJECT_ID --region=$REGION
 ```
 
+You can list the rollouts for the release by running the following command:
+
+```shell
+gcloud deploy releases list --delivery-pipeline=im-network-pipeline --project=$PROJECT_ID --region=$REGION
+```
+
+
 ### Configuration context
 The Terraform configuration is structured so the dev and prod root modules are defined in their own directories:
 
