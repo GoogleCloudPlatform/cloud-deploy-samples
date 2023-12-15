@@ -8,7 +8,7 @@ In this quickstart you will:
 
 1. Import a Vertex AI model into model registry and create an endpoint where the model will be deployed.
 2. Define a Cloud Deploy delivery pipeline, custom target type for Vertex AI, and one target.
-3. Create a Cloud Deploy release and rollout to deploy a Vertex AI model to the dev-endpoint target.
+3. Create a Cloud Deploy release and rollout to deploy a Vertex AI model to the target.
 
 ## 1. Clone Repository
 
