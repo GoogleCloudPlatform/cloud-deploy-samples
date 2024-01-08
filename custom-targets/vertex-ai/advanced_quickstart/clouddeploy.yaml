@@ -1,0 +1,58 @@
+# Copyright 2023 Google LLC
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     https:#www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: vertex-ai-cloud-deploy-pipeline
+serialPipeline:
+  stages:
+  - targetId: dev-endpoint
+    strategy:
+      standard:
+        postdeploy:
+          actions: ["add-aliases"]
+  - targetId: prod-endpoint
+    strategy:
+      canary:
+        customCanaryDeployment:
+          phaseConfigs:
+          - phaseId: "phase1"
+            percentage: 50
+          - phaseId: "stable"
+            percentage: 100
+            postdeploy:
+              actions: ["add-aliases"]
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: dev-endpoint
+customTarget:
+  customTargetType: vertex-ai-endpoint
+deployParameters:
+  customTarget/vertexAIEndpoint: projects/$PROJECT_ID/locations/$REGION/endpoints/$DEV_ENDPOINT_ID
+  customTarget/vertexAIMinReplicaCount: "3"
+  customTarget/vertexAIAliases: "dev,challenger"
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: prod-endpoint
+customTarget:
+  customTargetType: vertex-ai-endpoint
+deployParameters:
+  customTarget/vertexAIEndpoint: projects/$PROJECT_ID/locations/$REGION/endpoints/$PROD_ENDPOINT_ID
+  customTarget/vertexAIConfigurationPath: "prod/deployedModel.yaml"
+  customTarget/vertexAIMinReplicaCount: "5"
+  customTarget/vertexAIAliases: "prod,champion"
