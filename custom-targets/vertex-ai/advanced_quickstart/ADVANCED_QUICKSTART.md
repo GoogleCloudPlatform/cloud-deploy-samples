@@ -63,6 +63,16 @@ following roles:
        --role="roles/aiplatform.user"
    ```
 
+4. Build and Register a Custom Target Type for Vertex AI
+
+From within the `quickstart` directory, run this command to build the Vertex AI model deployer image and
+install the custom target resources:
+
+```shell
+../build_and_register.sh -p $PROJECT_ID -r $REGION
+```
+For information about the `build_and_register.sh` script, see the [README](../README.md#build)
+
 
 ## 4. Import a model into Model Registry
 
@@ -104,38 +114,29 @@ take 5 minutes or so.
 
 The endpoint ID will be used to refer to the endpoint, rather than the display name.
 
-## 6. Build and Register a Custom Target Type for Vertex AI
+## 6. Create delivery pipeline, targets, and skaffold
 
-From within the `quickstart` directory, run this command to build the Vertex AI model deployer image and
-install the custom target resources:
-
-```shell
-../build_and_register.sh -p $PROJECT_ID -r $REGION
-```
-
-For information about the `build_and_register.sh` script, see the [README](../README.md#build)
-
-## 7. Create delivery pipeline, target, and skaffold
-
-Similarly, within the `quickstart` directory, run this second command to replace placeholders in `clouddeploy.yaml`
-and `configuration/skaffold.yaml` with actual values
+Within the `quickstart` directory, run this command to make a temporary copy of `clouddeploy.yaml` and
+`configuration/skaffold.yaml`, and to replace placeholders in the copies with actual values
 
 ```shell
-./replace_variables.sh -p $PROJECT_ID -r $REGION -d $DEV_ENDPOINT_ID -e $PROD_ENDPOINT_ID
+export TMPDIR=$(mktemp -d)
+./replace_variables.sh -p $PROJECT_ID -r $REGION -e $ENDPOINT_ID -t $TMPDIR
 ```
 
 The command does the following:
-1. Replaces the placeholders in `clouddeploy.yaml`
-2. Obtains the URL of the latest version of the custom image, built in step 6, and sets it in `configuration/skaffold.yaml`
+1. Creates temporary directory $TMPDIR and copies `clouddeploy.yaml` and `configuration` into it.
+2. Replaces the placeholders in `$TMPDIR/clouddeploy.yaml`
+3. Obtains the URL of the latest version of the custom image, built in step 6, and sets it in `$TMPDIR/configuration/skaffold.yaml`
 
 
 Lastly, apply the Cloud Deploy configuration defined in `clouddeploy.yaml`:
 
 ```shell
-gcloud deploy apply --file=clouddeploy.yaml --project=$PROJECT_ID --region=$REGION
+gcloud deploy apply --file=$TMPDIR/clouddeploy.yaml --project=$PROJECT_ID --region=$REGION
 ```
 
-## 8. Create a release and rollout
+## 7. Create a release and rollout
 
 Create a Cloud Deploy release for the configuration defined in the `configuration` directory. This automatically
 creates a rollout that deploys the first model version to the development target.
@@ -145,7 +146,7 @@ gcloud deploy releases create release-001 \
     --delivery-pipeline=vertex-ai-cloud-deploy-pipeline \
     --project=$PROJECT_ID \
     --region=$REGION \
-    --source=configuration \
+    --source=$TMPDIR/configuration \
     --deploy-parameters="customTarget/vertexAIModel=projects/$PROJECT_ID/locations/$REGION/models/test_model@1"
 ```
 
@@ -156,7 +157,8 @@ The `--source` command line flag instructs gcloud where to look for the configur
 The `--deploy-parameters` flag is used to provide the custom deployer with additional parameters needed to perform the deployment.
 
 Here, we are providing the custom deployer with deploy parameter `customTarget/vertexAIModel`
-which specifies the full resource name of the model to deploy
+which specifies the full resource name of the model to deploy. We are also specifying
+the model version by including it at the end of the model name.
 
 The remaining flags specify the Cloud Deploy Delivery Pipeline. `--delivery-pipeline` is the name of
 the delivery pipeline where the release will be created, and the project and region of the pipeline
@@ -177,7 +179,7 @@ Run this command to filter only the render status of the release:
 gcloud deploy releases describe release-001 --delivery-pipeline=vertex-ai-cloud-deploy-pipeline --project=$PROJECT_ID --region=$REGION --format "(renderState)"
 ```
 
-## 9. Monitor rollout status
+## 8. Monitor rollout status
 
 In the [Cloud Deploy UI](https://cloud.google.com/deploy) for your project click on the
 `vertex-ai-cloud-deploy-pipeline` delivery pipeline. Here you can see the release created and the rollout to the target for the release.
@@ -195,7 +197,7 @@ After the rollout completes, you can inspect the deployed models and traffic spl
 ```shell
 gcloud ai endpoints describe $DEV_ENDPOINT_ID --region $REGION --project $PROJECT_ID
 ```
-## 10. Inspect aliases in the deployed model
+## 9. Inspect aliases in the deployed model
 
 Monitor the post-deploy operation by querying the rollout:
 
@@ -209,7 +211,7 @@ After the post-deploy job has succeeded, you can then inspect the deployed model
 gcloud ai models describe test_model@1 --region $REGION --project $PROJECT_ID --format "(versionAliases)"
 ```
 
-## Deploy to production
+## 10. Deploy to production
 
 Promote the model in `dev` endpoint to `prod` by using the `gcloud deploy releases promote command`
 
@@ -237,10 +239,10 @@ After the post-deploy job has succeeded, inspect the deployed model and view its
 gcloud ai models describe test_model@1 --region $REGION --project $PROJECT_ID --format "(versionAliases)"
 ```
 
-## Upload a new model version and create new release
+## 11. Upload a new model version and create new release
 
 Create a new version of the model by re-uploading the boston dataset with `gcloud`. 
-This time however, use the `parent-model` flag  so that the model is uploaded as
+This time however, use the `parent-model` flag so that the model is uploaded as
 a new version of the first model rather than a separate model.
    ```shell
    gcloud ai models upload \
@@ -253,7 +255,7 @@ a new version of the first model rather than a separate model.
    ```
 
 After the upload completes, create a new cloud deploy release using the new model
-version.  This time, changing the version ID of the vertexAIModel deploy parameter
+version. This time, changing the version ID of the vertexAIModel deploy parameter
 to 2 to refer to the new model.
 
 ```shell
@@ -277,7 +279,7 @@ After the post-deploy job has succeeded, inspect the deployed model and view its
 gcloud ai models describe test_model@2 --region $REGION --project $PROJECT_ID --format "(versionAliases)"
 ```
 
-## Promote the second release
+## 12. Promote the second release
 
 Promote the second release to the production endpoint, since this is the second release,
 deployed to the target, only 50% of the traffic will be initially routed to it.
@@ -320,7 +322,7 @@ After the post-deploy job has succeeded, inspect the deployed model and view its
 gcloud ai models describe test_model@2 --region $REGION --project $PROJECT_ID --format "(versionAliases)"
 ```
 
-## 11. Clean up
+## 13. Clean up
 
 To delete the endpoints after the quickstart, run the following commands:
 
