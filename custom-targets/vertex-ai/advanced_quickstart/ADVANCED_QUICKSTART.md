@@ -121,7 +121,7 @@ Within the `quickstart` directory, run this command to make a temporary copy of 
 
 ```shell
 export TMPDIR=$(mktemp -d)
-./replace_variables.sh -p $PROJECT_ID -r $REGION -e $ENDPOINT_ID -t $TMPDIR
+./replace_variables.sh -p $PROJECT_ID -r $REGION -d $DEV_ENDPOINT_ID -e $PROD_ENDPOINT_ID -t $TMPDIR
 ```
 
 The command does the following:
@@ -263,7 +263,7 @@ gcloud deploy releases create release-002 \
     --delivery-pipeline=vertex-ai-cloud-deploy-pipeline \
     --project=$PROJECT_ID \
     --region=$REGION \
-    --source=configuration \
+    --source=$TMPDIR/configuration \
     --deploy-parameters="customTarget/vertexAIModel=projects/$PROJECT_ID/locations/$REGION/models/test_model@2"
 ```
 
