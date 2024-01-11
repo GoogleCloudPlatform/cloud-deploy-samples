@@ -62,6 +62,17 @@ The default service account, `{project_num}-compute@developer.gserviceaccount.co
        --role="roles/aiplatform.user"
    ```
 
+4. Build and Register a Custom Target Type for Vertex AI
+
+From within the `quickstart` directory, run this command to build the Vertex AI model deployer image and
+install the custom target resources:
+
+```shell
+../build_and_register.sh -p $PROJECT_ID -r $REGION
+```
+
+For information about the `build_and_register.sh` script, see the [README](../README.md#build)
+
 
 ## 4. Import a model into Model Registry
 
@@ -98,38 +109,29 @@ take 5 minutes or so.
 
 The endpoint ID will be used to refer to the endpoint, rather than the display name.
 
-## 6. Build and Register a Custom Target Type for Vertex AI
+## 6. Create delivery pipeline, target, and skaffold
 
-From within the `quickstart` directory, run this command to build the Vertex AI model deployer image and
-install the custom target resources:
-
-```shell
-../build_and_register.sh -p $PROJECT_ID -r $REGION
-```
-
-For information about the `build_and_register.sh` script, see the [README](../README.md#build)
-
-## 7. Create delivery pipeline, target, and skaffold
-
-Similarly, within the `quickstart` directory, run this second command to replace placeholders in `clouddeploy.yaml`
-and `configuration/skaffold.yaml` with actual values
+Within the `quickstart` directory, run this second command to make a temporary copy of `clouddeploy.yaml` and
+`configuration/skaffold.yaml`, and to replace placeholders in the copies with actual values
 
 ```shell
-./replace_variables.sh -p $PROJECT_ID -r $REGION -e $ENDPOINT_ID
+export TMPDIR=$(mktemp -d)
+./replace_variables.sh -p $PROJECT_ID -r $REGION -e $ENDPOINT_ID -t $TMPDIR
 ```
 
 The command does the following:
-1. Replaces the placeholders in `clouddeploy.yaml`
-2. Obtains the URL of the latest version of the custom image, built in step 6, and sets it in `configuration/skaffold.yaml`
+1. Creates temporary directory $TMPDIR and copies `clouddeploy.yaml` and `configuration` into it.
+2. Replaces the placeholders in `$TMPDIR/clouddeploy.yaml`
+3. Obtains the URL of the latest version of the custom image, built in step 6, and sets it in `$TMPDIR/configuration/skaffold.yaml`
 
 
 Lastly, apply the Cloud Deploy configuration defined in `clouddeploy.yaml`:
 
 ```shell
-gcloud deploy apply --file=clouddeploy.yaml --project=$PROJECT_ID --region=$REGION
+gcloud deploy apply --file=$TMPDIR/clouddeploy.yaml --project=$PROJECT_ID --region=$REGION
 ```
 
-## 8. Create a release and rollout
+## 7. Create a release and rollout
 
 Create a Cloud Deploy release for the configuration defined in the `configuration` directory. This automatically
 creates a rollout that deploys the first model version to the target.
@@ -139,7 +141,7 @@ gcloud deploy releases create release-001 \
     --delivery-pipeline=vertex-ai-cloud-deploy-pipeline \
     --project=$PROJECT_ID \
     --region=$REGION \
-    --source=configuration \
+    --source=$TMPDIR/configuration \
     --deploy-parameters="customTarget/vertexAIModel=projects/$PROJECT_ID/locations/$REGION/models/test_model"
 ```
 
@@ -171,7 +173,7 @@ Run this command to filter only the render status of the release:
 gcloud deploy releases describe release-001 --delivery-pipeline=vertex-ai-cloud-deploy-pipeline --project=$PROJECT_ID --region=$REGION --format "(renderState)"
 ```
 
-## 9. Monitor rollout status
+## 8. Monitor rollout status
 
 In the [Cloud Deploy UI](https://cloud.google.com/deploy) for your project click on the
 `vertex-ai-cloud-deploy-pipeline` delivery pipeline. Here you can see the release created and the rollout to the target for the release.
@@ -189,7 +191,7 @@ After the rollout completes, you can inspect the deployed models and traffic spl
 ```shell
 gcloud ai endpoints describe $ENDPOINT_ID --region $REGION --project $PROJECT_ID
 ```
-## 10. Inspect aliases in the deployed model 
+## 9. Inspect aliases in the deployed model 
 
 Monitor the post-deploy operation by querying the rollout:
 
@@ -203,7 +205,7 @@ After the post-deploy job has succeeded, you can then inspect the deployed model
 gcloud ai models describe test_model --region $REGION --project $PROJECT_ID --format "(versionAliases)"
 ```
 
-## 11. Clean up
+## 10. Clean up
 
 To delete the endpoint after the quickstart, run the following commands:
 
@@ -231,5 +233,5 @@ gcloud ai models delete test_model --region $REGION --project $PROJECT_ID
 To delete Cloud Deploy resources:
 
 ```shell
-gcloud deploy delete --file=clouddeploy.yaml --force --project=$PROJECT_ID --region=$REGION
+gcloud deploy delete --file=$TMPDIR/clouddeploy.yaml --force --project=$PROJECT_ID --region=$REGION
 ```
