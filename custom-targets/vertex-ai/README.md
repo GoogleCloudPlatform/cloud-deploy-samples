@@ -16,7 +16,7 @@ A quickstart that uses this sample is available [here](./quickstart/QUICKSTART.m
 The Vertex AI model deployer expects a YAML representation of a [DeployedModel](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.endpoints#DeployedModel) to be provided when a Cloud Deploy Release is created. The deployer supports substituting placeholder values in the DeployedModel YAML with values provided as [deploy parameters](https://cloud.google.com/deploy/docs/parameters)
 
 ```text
-displayName:test_model
+displayName: test_model
 dedicatedResources:
   minReplicaCount: 3
   maxReplicaCount: 9
