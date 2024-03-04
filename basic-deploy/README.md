@@ -17,6 +17,6 @@ The clouddeploy.yaml can be applied by running:
 
 You can create your first release with
 ```
-   gcloud deploy releases create ‘r$DATE$TIME’ –delivery_pipeline=my-app-pipeline
+   gcloud deploy releases create ‘r$DATE$TIME’ –-delivery-pipeline=my-app-pipeline
 ```
 You can then inspect the pipeline in the Cloud Console UI and promote the release to the second target 
