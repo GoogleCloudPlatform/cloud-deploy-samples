@@ -2,18 +2,18 @@
 
 ## Overview
 
-This quickstart is a more advanced version of this [Quickstart](../quickstart/QUICKSTART.md) which showcases additional cloud deploy features.
+This quickstart is a more advanced version of this [Quickstart](../quickstart/QUICKSTART.md) which showcases how to make canary deployments with the Vertex AI custom target.
 
 In this quickstart you will:
 
-1. Import multiples Vertex AI models into model registry and create two endpoints: a development and production endpoint.
+1. Import multiple Vertex AI models into model registry and create two endpoints: development and production.
 2. Define a Cloud Deploy delivery pipeline, custom target type for Vertex AI, and two targets.
 3. Create an initial Cloud Deploy Release, deploy it to the dev target adn then promote it to the prod target.
 4. Create a second Cloud Deploy release, deploy it to the dev target, and then use canary strategy to gradually roll it out to the production target.
 
 ## 1. Clone Repository
 
-Clone this repository and navigate to the quickstart directory (`cloud-deploy-samples/custom-targets/vertex-ai/quickstart`) since the commands provided expect to be executed from that directory.
+Clone this repository and navigate to the quickstart directory (`cloud-deploy-samples/custom-targets/vertex-ai/quickstart`) to execute the commands in this document.
 
 ## 2. Environment variables
 
@@ -26,7 +26,7 @@ export REGION="YOUR_REGION"
 
 ## 3. Prerequisites
 
-[Install](https://cloud.google.com/sdk/docs/install) the latest version of the Google Cloud CLI
+[Install](https://cloud.google.com/sdk/docs/install) the latest version of the Google Cloud CLI.
 
 
 ### APIs
@@ -46,6 +46,7 @@ following roles:
        --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
        --role="roles/clouddeploy.jobRunner"
    ```
+   
 2. `roles/clouddeploy.viewer` - required to access Cloud Deploy resources
 
    ```shell
@@ -54,7 +55,8 @@ following roles:
        --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
        --role="roles/clouddeploy.viewer"
    ```
-3. `roles/aiplatform.user` - required to access the models and deploy endpoints in the custom target
+   
+3. `roles/aiplatform.user` - required to access the models and deploy endpoints to the custom target
 
    ```shell
    gcloud projects add-iam-policy-binding $PROJECT_ID \
@@ -112,12 +114,12 @@ Create the Vertex AI endpoints using the following commands:
 If this is your first time using Vertex AI in this project, this operation will
 take 5 minutes or so.
 
-The endpoint ID will be used to refer to the endpoint, rather than the display name.
+We'll use the endpoint ID rather than the display name to refer to the endpoint.
 
-## 6. Create delivery pipeline, targets, and skaffold
+## 6. Create delivery pipeline, targets, and Skaffold config
 
 Within the `quickstart` directory, run this command to make a temporary copy of `clouddeploy.yaml` and
-`configuration/skaffold.yaml`, and to replace placeholders in the copies with actual values
+`configuration/skaffold.yaml`, and to replace placeholders in the copies with actual values.
 
 ```shell
 export TMPDIR=$(mktemp -d)
@@ -125,9 +127,9 @@ export TMPDIR=$(mktemp -d)
 ```
 
 The command does the following:
-1. Creates temporary directory $TMPDIR and copies `clouddeploy.yaml` and `configuration` into it.
-2. Replaces the placeholders in `$TMPDIR/clouddeploy.yaml`
-3. Obtains the URL of the latest version of the custom image, built in step 6, and sets it in `$TMPDIR/configuration/skaffold.yaml`
+1. Creates temporary directory $TMPDIR and copies `clouddeploy.yaml` and `configuration/skaffold.yaml` into it.
+2. Replaces the placeholders in `$TMPDIR/clouddeploy.yaml`.
+3. Obtains the URL of the latest version of the custom image, built in step 6, and sets it in `$TMPDIR/configuration/skaffold.yaml`.
 
 
 Lastly, apply the Cloud Deploy configuration defined in `clouddeploy.yaml`:
@@ -150,7 +152,7 @@ gcloud deploy releases create release-001 \
     --deploy-parameters="customTarget/vertexAIModel=projects/$PROJECT_ID/locations/$REGION/models/test_model@1"
 ```
 
-### Explanation of command line flags
+### Explanation of command-line flags
 
 The `--source` command line flag instructs gcloud where to look for the configuration files relative to the working directory where the command is run.
 
@@ -160,9 +162,9 @@ Here, we are providing the custom deployer with deploy parameter `customTarget/v
 which specifies the full resource name of the model to deploy. We are also specifying
 the model version by including it at the end of the model name.
 
-The remaining flags specify the Cloud Deploy Delivery Pipeline. `--delivery-pipeline` is the name of
+The remaining flags specify the Cloud Deploy delivery pipeline. `--delivery-pipeline` is the name of
 the delivery pipeline where the release will be created, and the project and region of the pipeline
-is specified by `--project` and `--region` respectively.
+are specified by `--project` and `--region` respectively.
 
 
 ### Monitor the release's progress
@@ -215,7 +217,7 @@ gcloud ai models describe test_model@1 --region $REGION --project $PROJECT_ID --
 
 Promote the model in `dev` endpoint to `prod` by using the `gcloud deploy releases promote command`
 
-Since this is the first deployment to that target, we will skipping directly to the `stable` phase, where 100% of the traffic
+Since this is the first deployment to that target, we will skip directly to the `stable` phase, where 100% of the traffic
 goes to the model.
 ```shell
 gcloud deploy releases promote --release release-001 --delivery-pipeline=vertex-ai-cloud-deploy-pipeline --project=$PROJECT_ID --region=$REGION --starting-phase-id stable
@@ -254,7 +256,7 @@ a new version of the first model rather than a separate model.
        --parent-model=projects/$PROJECT_ID/locations/$REGION/models/test_model
    ```
 
-After the upload completes, create a new cloud deploy release using the new model
+After the upload completes, create a new Cloud Deploy release using the new model
 version. This time, changing the version ID of the vertexAIModel deploy parameter
 to 2 to refer to the new model.
 
@@ -267,7 +269,7 @@ gcloud deploy releases create release-002 \
     --deploy-parameters="customTarget/vertexAIModel=projects/$PROJECT_ID/locations/$REGION/models/test_model@2"
 ```
 
-Inspect the rollout created using the following command:
+Inspect the rollout using the following command:
 
 ```shell
 gcloud deploy rollouts describe release-002-to-dev-endpoint-0001 --release=release-002 --delivery-pipeline=vertex-ai-cloud-deploy-pipeline --project=$PROJECT_ID --region=$REGION
