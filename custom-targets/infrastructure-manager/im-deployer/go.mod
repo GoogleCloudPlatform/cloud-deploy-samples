@@ -26,7 +26,7 @@ require (
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/zclconf/go-cty v1.14.1
 	google.golang.org/grpc v1.59.0
-	google.golang.org/protobuf v1.31.0
+	google.golang.org/protobuf v1.33.0
 )
 
 require (
