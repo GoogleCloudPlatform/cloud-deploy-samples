@@ -1,0 +1,50 @@
+# Copyright 2023 Google LLC
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     https://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: tf-network-pipeline
+serialPipeline:
+  stages:
+    - targetId: tf-dev
+      deployParameters:
+      - values:
+          customTarget/tfBackendPrefix: terraform/network-state
+          customTarget/tfConfigurationPath: environments/dev
+    - targetId: tf-prod
+      deployParameters:
+      - values:
+          customTarget/tfBackendPrefix: terraform/network-state
+          customTarget/tfConfigurationPath: environments/prod
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: tf-dev
+customTarget:
+  customTargetType: terraform
+deployParameters:
+  customTarget/tfBackendBucket: $DEV_BACKEND_BUCKET
+  TF_VAR_project_id: $PROJECT_ID
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: tf-prod
+customTarget:
+  customTargetType: terraform
+deployParameters:
+  customTarget/tfBackendBucket: $PROD_BACKEND_BUCKET
+  TF_VAR_project_id: $PROJECT_ID

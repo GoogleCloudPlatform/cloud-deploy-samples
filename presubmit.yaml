@@ -1,0 +1,18 @@
+# Cloud Build YAML to run all presubmit tasks
+steps:
+  - name: golang
+    script: |
+      go build -C custom-targets/util/applysetters
+      go build -C custom-targets/util/clouddeploy
+      go build -C custom-targets/git-ops/git-deployer
+      go build -C custom-targets/helm/helm-deployer
+      go build -C custom-targets/terraform/terraform-deployer
+      go build -C custom-targets/infrastructure-manager/im-deployer
+      go build -C custom-targets/vertex-ai/model-deployer
+  - name: docker
+    script: |
+        docker build custom-targets/git-ops/git-deployer
+        docker build custom-targets/helm/helm-deployer
+        docker build custom-targets/terraform/terraform-deployer
+        docker build custom-targets/infrastructure-manager/im-deployer
+        docker build custom-targets/vertex-ai/model-deployer
