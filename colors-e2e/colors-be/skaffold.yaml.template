@@ -1,0 +1,59 @@
+apiVersion: skaffold/v4beta4
+kind: Config
+metadata:
+  name: table-ui-demo-backend
+build:
+  artifacts:
+  - image: $IMAGE_REPO/colors-backend
+    docker:
+      dockerfile: Dockerfile
+manifests:
+  rawYaml:
+  - k8s.yaml
+verify:
+- name: load-test
+  executionMode:
+    kubernetesCluster: {}
+  container:
+    name: load-test-container
+    image: fortio/fortio
+    args: ["load", "-allow-initial-errors","-logger-force-color", "-t", "70s", "-qps", "100", "http://colors-be-scv:8080/color"]
+- name: verify-metrics
+  container:
+    name: verify-requests
+    image: $IMAGE_REPO/verify-evaluate-cloud-metrics
+    command: ["./verify-evaluate-cloud-metrics"]
+    args:
+    - --table-name=k8s_pod
+    - --metric-type=custom.googleapis.com/requests/request_count
+    - --predicates=resource.cluster_name=='$metricClusterName'
+    - --refresh-period=0m30s
+    - --sliding-window=15s
+    - --time-to-monitor=2m
+    - --trigger-duration=45s
+    - --max-error-percentage=10 # verify that less than 10% of the requests are 5xx errors
+
+profiles:
+- name: CANARY # Profile configures the verify job to look at the canary deployment
+  verify:
+  - name: load-test
+    executionMode:
+      kubernetesCluster: {}
+    container:
+      name: load-test-container
+      image: fortio/fortio
+      args: ["load", "-allow-initial-errors","-logger-force-color", "-t", "70s", "-qps", "100", "http://colors-be-scv:8080/color"]
+  - name: verify-metrics
+    container:
+      name: verify-requests
+      image: $IMAGE_REPO/verify-evaluate-cloud-metrics
+      command: ["./verify-evaluate-cloud-metrics"]
+      args:
+      - --table-name=k8s_pod
+      - --metric-type=custom.googleapis.com/requests/request_count
+      - --predicates=resource.cluster_name=='$metricClusterName',metric.deployment_name == 'be-canary'
+      - --refresh-period=0m30s
+      - --sliding-window=15s
+      - --time-to-monitor=2m
+      - --trigger-duration=45s
+      - --max-error-percentage=10 # verify that less than 10% of the requests are 5xx errors

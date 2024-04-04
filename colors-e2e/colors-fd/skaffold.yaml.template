@@ -1,0 +1,12 @@
+apiVersion: skaffold/v3alpha1
+kind: Config
+metadata:
+  name: table-ui-demo
+build:
+  artifacts:
+  - image: $IMAGE_REPO/colors-frontdoor
+    docker:
+      dockerfile: Dockerfile
+manifests:
+  rawYaml:
+  - k8s.yaml

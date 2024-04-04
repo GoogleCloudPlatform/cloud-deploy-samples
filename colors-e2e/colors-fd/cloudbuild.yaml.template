@@ -1,0 +1,23 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  script: |
+    #!/bin/bash
+    docker build -t $IMAGE_REPO/colors-frontdoor colors-fd
+    docker push $IMAGE_REPO/colors-frontdoor
+    docker inspect --format='{{index .RepoDigests 0}}' $IMAGE_REPO/colors-frontdoor > sha.txt
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  script: |
+    #!/bin/bash
+    sha=$(<sha.txt)
+    echo $sha
+    gitSha=$(git rev-parse HEAD)
+    author=$(git log -1 --pretty=%an)
+    gcloud deploy releases create 'r$DATE-$TIME' --delivery-pipeline=colors-fd \
+    --region us-central1 --images $IMAGE_REPO/colors-frontdoor=$sha --skaffold-file=colors-fd/skaffold.yaml \
+    --annotations=src-at-commit=$GIT_REPO/tree/$gitSha,commit-details=$GIT_REPO/commit/$gitSha,commit-author="$author"
+images: 
+- '$IMAGE_REPO/colors-frontdoor'
+options:
+  logging: CLOUD_LOGGING_ONLY
+  requestedVerifyOption: VERIFIED

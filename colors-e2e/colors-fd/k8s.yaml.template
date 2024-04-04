@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: colors-fd
+  labels:
+    app: web
+spec:
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - image: $IMAGE_REPO/colors-frontdoor:latest
+        name: colors-fd
+        env:
+        - name: AppMyData
+          value: "Test Setup"
+        - name: AppEnvName
+          value: "unknown" # from-param: ${envName}
+        - name: AppReplicas
+          value: "1" # from-param: ${replicaCount} 
+        - name: AppClrScv
+          value: colors-be-scv:8080
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: colors-fd-scv
+spec:
+  selector:
+    app: web
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
