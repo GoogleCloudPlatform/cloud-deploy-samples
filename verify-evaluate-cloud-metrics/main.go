@@ -86,6 +86,17 @@ func formatMsg(in string) string {
 	return in
 }
 
+// replaceEnvVars replaces env var refs in the string with their value (if set). Env var refs are made
+// with the format $envVarName
+func replaceEnvVars(input string) string {
+
+	for _, e := range os.Environ() {
+		pair := strings.SplitN(e, "=", 2)
+		input = strings.ReplaceAll(input, "$"+pair[0], pair[1])
+	}
+	return input
+}
+
 func init() {
 	// Initializing of the flag and print out the values for visibility.
 	flag.StringVar(&project, "project", os.Getenv("CLOUD_DEPLOY_PROJECT"), "The ID of the project that has the metrics defined, defaulted to the CLOUD_DEPLOY_PROJECT environmental variable")
@@ -101,6 +112,11 @@ func init() {
 	flag.StringVar(&customQuery, "custom-query", "", "Customized query following [MQL](https://cloud.google.com/monitoring/mql/reference) to use for query instead. By specifying this, the query will not be crafted by the program")
 
 	flag.Parse()
+	project = replaceEnvVars(project)
+	tableName = replaceEnvVars(tableName)
+	metricType = replaceEnvVars(metricType)
+	predicates = replaceEnvVars(predicates)
+	responseCodeClass = replaceEnvVars(responseCodeClass)
 
 	fmt.Println("---")
 	fmt.Println("Verification configured as follows:")
@@ -176,6 +192,11 @@ func errorConditionTriggered(ctx context.Context, client *monitoring.QueryClient
 		endTimeOfErrorCondition := time.Time{}
 		var dataPoints []*monitoringpb.TimeSeriesData_PointData
 		for _, p := range resp.GetPointData() {
+			errorRatio := p.GetValues()[0].GetDoubleValue() * 100
+			fmt.Printf("error ratio: %f\n", errorRatio)
+			fmt.Printf("Start time: %v\n", p.GetTimeInterval().StartTime.AsTime())
+			fmt.Printf("End time: %v\n", p.GetTimeInterval().EndTime.AsTime())
+
 			if calculateDuration(startTimeOfErrorCondition, endTimeOfErrorCondition) >= triggerDuration {
 				// We check to see if the sliding windows that we have set from previous iterations exceed the trigger duration.
 				// If it has, then we stop reading point data.
@@ -186,6 +207,7 @@ func errorConditionTriggered(ctx context.Context, client *monitoring.QueryClient
 				// Assuming that the point data is a ratio.
 				return false, fmt.Errorf("expected 1 rate value for the total interval, instead got: %d", len(p.GetValues()))
 			}
+
 			if errorRatio := p.GetValues()[0].GetDoubleValue() * 100; errorRatio >= maxErrorPercentage {
 				if endTimeOfErrorCondition.IsZero() {
 					// initialization
