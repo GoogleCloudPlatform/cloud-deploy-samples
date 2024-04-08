@@ -1,0 +1,191 @@
+#############
+### Pipelines
+#############
+
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+ name: colors-fd
+ annotations:
+  app-src-url: https://github.com/GoogleCloudPlatform/cloud-deploy-samples/tree/main/colors-e2e
+serialPipeline:
+ stages:
+ - targetId: dev
+   deployParameters:
+    - values:
+        envName: "dev env"
+ - targetId: staging
+   deployParameters:
+    - values:
+        envName: "staging env"
+ - targetId: all-prod
+   deployParameters:
+    - values:
+        envName: "prod env one"
+        replicaCount: "20"
+      matchTargetLabels:
+        prod_type: one
+    - values:
+        envName: "prod env two"
+        replicaCount: "5"
+      matchTargetLabels:
+        prod_type: two
+---
+
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+ name: colors-be
+ annotations:
+  app-src-url: https://github.com/GoogleCloudPlatform/cloud-deploy-samples/tree/main/colors-e2e
+serialPipeline:
+ stages:
+ - targetId: dev
+   strategy:
+     standard:
+      verify: true
+   deployParameters:
+    - values:
+        faultPercent: "0"
+ - targetId: staging
+   strategy:
+     standard:
+       verify: true
+ - targetId: all-prod
+   deployParameters:
+    - values:
+        faultPercent: "30"
+   strategy:
+      canary:
+        runtimeConfig:
+          kubernetes:
+            serviceNetworking:
+              service: "colors-be-scv"
+              deployment: "colors-be"
+        customCanaryDeployment:
+          phaseConfigs:
+          - phaseId: "canary10"
+            percentage: 10
+            profiles: [ "CANARY" ]
+            verify: true
+          - phaseId: "canary30"
+            percentage: 30
+            profiles: [ "CANARY" ]
+            verify: true
+          - phaseId: "stable"
+            percentage: 100
+            verify: true
+---
+
+#############
+### Targets
+#############
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+ name: dev
+gke:
+  cluster: $DEV_CLUSTER
+deployParameters:
+  metricClusterName: "dev"
+
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+ name: staging
+gke:
+  cluster: $STAGING_CLUSTER
+deployParameters:
+  metricClusterName: "staging"
+
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+ name: prod1
+ labels:
+  prodType: one
+gke:
+  cluster: $PROD1_CLUSTER
+deployParameters:
+  metricClusterName: "prod1"
+
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+ name: prod2
+ labels:
+  prodType: two
+gke:
+  cluster: $PROD2_CLUSTER
+deployParameters:
+  metricClusterName: "prod2"
+
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+ name: all-prod
+description: contains all production targets
+multiTarget:
+ targetIds: [ prod1, prod2 ]
+requireApproval: true
+
+---
+
+###############
+### Automations
+###############
+
+apiVersion: deploy.cloud.google.com/v1
+kind: Automation
+serviceAccount: $COMPUTE_SERVICE_ACCOUNT
+description: Auto promote front door rollouts though pipeline 
+metadata:
+  name: colors-fd/dev-promote
+selector:
+- target:
+    id: dev
+- target:
+    id: staging
+rules:
+- promoteRelease:
+    name: promote-release
+    toTargetId: "@next"
+    wait: 0m
+
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Automation
+serviceAccount: $COMPUTE_SERVICE_ACCOUNT
+description: Auto promote backend rollouts though pipeline 
+metadata:
+  name: colors-be/dev-promote
+selector:
+- target:
+    id: dev
+- target:
+    id: staging
+rules:
+- promoteRelease:
+    name: promote-release
+    toTargetId: "@next"
+    wait: 0m
+
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Automation
+serviceAccount: $COMPUTE_SERVICE_ACCOUNT
+description: Once a rollout has gone to 30%, move it to 100% automatically after 1 min 
+metadata:
+  name: colors-be/advance-full
+selector:
+- target:
+    id: all-prod
+rules:
+- advanceRollout:
+    name: "advance-rollout"
+    fromPhases: ["canary10", "canary30"]
+    wait: 0m
