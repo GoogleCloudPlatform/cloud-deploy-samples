@@ -5,7 +5,7 @@ STAGING_CLUSTER=projects/<projectId>/locations/<location>/clusters/<clusterName>
 PROD1_CLUSTER=projects/<projectId>/locations/<location>/clusters/<clusterName>
 PROD2_CLUSTER=projects/<projectId>/locations/<location>/clusters/<clusterName>
 COMPUTE_SERVICE_ACCOUNT=<projectNumber>-compute@developer.gserviceaccount.com
-IMAGE_REPO="Repo for images"
+IMAGE_REPO="Repo for images" # Ex: us-central1-docker.pkg.dev/<project>/<repoName>
 GIT_REPO=https://github.com/GoogleCloudPlatform/cloud-deploy-samples
 
 for file in clouddeploy.yaml \
