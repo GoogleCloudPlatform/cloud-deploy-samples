@@ -17,5 +17,5 @@ customActions:
 - name: add-aliases
   containers:
   - name: add-aliases
-    image: us-central1-docker.pkg.dev/angel-gcp-starter-project2/cd-custom-targets/vertexai@$35b956514308af935fbec6c0c4d1d3627d1731060a211cb3d8733f8b323c3443
+    image: $REGION-docker.pkg.dev/$PROJECT_ID/cd-custom-targets/$_CT_IMAGE_NAME@$IMAGE_SHA
     args: ["/bin/vertex-ai-deployer", "--add-aliases-mode"]
