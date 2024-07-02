@@ -1,0 +1,13 @@
+name: Continuous Integration
+run-name: ${{ github.actor }} is running tests 🚀
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+      - name: Test the model deployer
+        working-directory: ./custom-targets/vertex-ai/model-deployer
+        run: go test -cover
