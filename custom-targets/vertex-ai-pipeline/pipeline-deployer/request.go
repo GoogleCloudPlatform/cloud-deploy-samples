@@ -15,23 +15,24 @@
 package main
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+
+	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
 	"google.golang.org/api/aiplatform/v1"
-	"os"
 )
 
 // Environment variable keys specific to the vertex ai deployer. These are provided via
 // deploy parameters in Cloud Deploy.
 const (
-	pipelineEnvKey    = "CLOUD_DEPLOY_customTarget_vertexAIPipeline"
-	configPathKey     = "CLOUD_DEPLOY_customTarget_vertexAIPipelineJobConfiguration"
-	paramValsKey      = "CLOUD_DEPLOY_customTarget_vertexAIPipelineJobParameterValues"
-	locValsKey        = "CLOUD_DEPLOY_customTarget_location"
-	projectValsKey    = "CLOUD_DEPLOY_customTarget_projectID"
+	pipelineEnvKey = "CLOUD_DEPLOY_customTarget_vertexAIPipeline"
+	configPathKey  = "CLOUD_DEPLOY_customTarget_vertexAIPipelineJobConfiguration"
+	paramValsKey   = "CLOUD_DEPLOY_customTarget_vertexAIPipelineJobParameterValues"
+	locValsKey     = "CLOUD_DEPLOY_customTarget_location"
+	projectValsKey = "CLOUD_DEPLOY_customTarget_projectID"
 )
 
 // requestHandler interface provides methods for handling the Cloud Deploy params.

@@ -17,9 +17,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"google.golang.org/api/aiplatform/v1"
 	"google.golang.org/api/option"
-	"os"
 	"sigs.k8s.io/yaml"
 )
 

@@ -1,11 +1,12 @@
 package main
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
-	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
 	"strings"
 	"testing"
+
+	"cloud.google.com/go/storage"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
 )
 
 // Tests that render works as expected. Does not test valid renderer.

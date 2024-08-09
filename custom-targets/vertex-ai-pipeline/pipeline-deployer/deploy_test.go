@@ -2,11 +2,8 @@ package main
 
 import (
 	"testing"
-	// "strings"
-	// "github.com/google/go-cmp/cmp"
+
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
-	// "github.com/stretchr/testify/assert"
-	//"google.golang.org/api/aiplatform/v1"
 )
 
 // Tests that addCommonMetadata populates the DeployResult as expected

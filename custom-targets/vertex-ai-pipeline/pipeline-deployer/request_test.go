@@ -1,17 +1,13 @@
 package main
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
 	"fmt"
-	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
 	"os"
 	"testing"
-	// "reflect"
-	// "google.golang.org/api/aiplatform/v1"
-	// "github.com/google/go-cmp/cmp"
-	// "io/ioutil"
-	// "os"
+
+	"cloud.google.com/go/storage"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
 )
 
 func TestCreateRequestHandler(t *testing.T) {
