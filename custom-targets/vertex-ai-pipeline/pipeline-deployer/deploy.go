@@ -16,12 +16,12 @@
 package main
 
 import (
+	"cloud.google.com/go/storage"
 	"context"
 	"fmt"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
 	"google.golang.org/api/aiplatform/v1"
 	"sigs.k8s.io/yaml"
-	"cloud.google.com/go/storage"
 )
 
 const aiDeployerSampleName = "clouddeploy-vertex-ai-sample"
@@ -65,7 +65,6 @@ func (d *deployer) process(ctx context.Context) error {
 	}
 	fmt.Printf("Uploaded deploy results to %s\n", rURI)
 	return nil
-
 }
 
 // deploy performs the Vertex AI pipeline deployment
@@ -102,7 +101,6 @@ func (d *deployer) downloadManifest(ctx context.Context) error {
 	}
 
 	fmt.Printf("Downloaded deploy input manifest from: %s\n", downloadPath)
-
 	return nil
 }
 
@@ -125,10 +123,10 @@ func (d *deployer) applyPipeline(ctx context.Context, localManifest string) ([]b
 		return nil, fmt.Errorf("unable to load CreatePipelineJobRequest from manifest: %v", err)
 	}
 
-	if err := deployPipeline(ctx, d.aiPlatformService, d.params.parent, pipelineRequest); err != nil {
+	parent := fmt.Sprintf("projects/%s/locations/%s", d.params.project, d.params.location)
+
+	if err := deployPipeline(ctx, d.aiPlatformService, parent, pipelineRequest); err != nil {
 		return nil, fmt.Errorf("unable to deploy pipeline: %v", err)
 	}
-
 	return yaml.Marshal(pipelineRequest)
 }
-

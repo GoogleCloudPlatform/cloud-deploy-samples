@@ -15,11 +15,12 @@
 package main
 
 import (
+	"cloud.google.com/go/storage"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/applysetters"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
-	"cloud.google.com/go/storage"
 	"google.golang.org/api/aiplatform/v1"
 	"os"
 	"sigs.k8s.io/yaml"
@@ -33,7 +34,6 @@ const (
 	// Path to use when unarchiving the source input.
 	srcPath = "/workspace/source"
 )
-
 
 // renderer implements the handler interface for performing a render.
 type renderer struct {
@@ -104,7 +104,6 @@ func (r *renderer) render(ctx context.Context) (*clouddeploy.RenderResult, error
 
 // renderCreatePipelineRequest generates a CreatePipelineJobRequest object and returns its definition as a yaml-formatted string
 func (r *renderer) renderCreatePipelineRequest() ([]byte, error) {
-
 	if err := applyDeployParams(r.params.configPath); err != nil {
 		return nil, fmt.Errorf("cannot apply deploy parameters to configuration file: %v", err)
 	}
@@ -120,13 +119,27 @@ func (r *renderer) renderCreatePipelineRequest() ([]byte, error) {
 	if err = yaml.Unmarshal(configuration, pipelineJob); err != nil {
 		return nil, fmt.Errorf("unable to parse configuration data into pipelineJob object: %v", err)
 	}
+	paramValues := r.params.pipelineParams
+
+	if pipelineJob.TemplateUri == "" {
+		pipelineJob.TemplateUri = r.params.pipeline
+	}
+
+	if pipelineJob.DisplayName == "" {
+		pipelineJob.DisplayName = paramValues["model_display_name"]
+	}
+
+	paramValues["project_id"] = r.params.project
+	paramString, err := json.Marshal(paramValues)
+	if err != nil {
+		fmt.Printf("Error marshalling JSON: %s", err)
+		return nil, fmt.Errorf("unable to marshal params json")
+	}
+	pipelineJob.RuntimeConfig.ParameterValues = paramString
 
 	request := &aiplatform.GoogleCloudAiplatformV1CreatePipelineJobRequest{PipelineJob: pipelineJob}
-
 	return yaml.Marshal(request)
 }
-
-
 
 // addCommonMetadata inserts metadata into the render result that should be present
 // regardless of render success or failure.
@@ -152,7 +165,6 @@ func applyDeployParams(configPath string) error {
 // that the user specified this value as a deploy-parameter and we should check
 // that we can open and read the file or fail the render if we cannot.
 func determineConfigFileLocation(configRelativePath string) (string, bool) {
-
 	configPath := defaultConfigPath
 	shouldErrOnMissingFile := false
 
@@ -162,13 +174,12 @@ func determineConfigFileLocation(configRelativePath string) (string, bool) {
 	}
 
 	return configPath, shouldErrOnMissingFile
-
 }
 
 // loadConfigurationFile loads and returns the configuration file for the target if it exists.
 func loadConfigurationFile(configPath string) ([]byte, error) {
 	filePath, shouldErrOnMissingFile := determineConfigFileLocation(configPath)
-
+	fmt.Errorf("HERE: %s", filePath)
 	fileInfo, err := os.Stat(filePath)
 	if err != nil && shouldErrOnMissingFile {
 		return nil, err
@@ -179,6 +190,3 @@ func loadConfigurationFile(configPath string) ([]byte, error) {
 	}
 	return nil, nil
 }
-
-
-
