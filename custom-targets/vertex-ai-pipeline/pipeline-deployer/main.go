@@ -15,12 +15,13 @@
 package main
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
 	"flag"
 	"fmt"
-	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
 	"os"
+
+	"cloud.google.com/go/storage"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
 )
 
 func main() {

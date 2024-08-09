@@ -17,11 +17,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"google.golang.org/api/aiplatform/v1"
 	"google.golang.org/api/option"
-	"os"
 	"sigs.k8s.io/yaml"
-	// "strings"
 )
 
 // pipelineRequestFromManifest loads the file provided in `path` and returns the parsed CreatePipelineJobRequest
@@ -40,8 +40,6 @@ func pipelineRequestFromManifest(path string) (*aiplatform.GoogleCloudAiplatform
 	return createPipelineRequest, nil
 }
 
-
-
 // newAIPlatformService generates a Service that can make API calls in the specified region.
 func newAIPlatformService(ctx context.Context, region string) (*aiplatform.Service, error) {
 	endPointOption := option.WithEndpoint(fmt.Sprintf("%s-aiplatform.googleapis.com", region))
@@ -49,20 +47,15 @@ func newAIPlatformService(ctx context.Context, region string) (*aiplatform.Servi
 	if err != nil {
 		return nil, fmt.Errorf("unable to authenticate")
 	}
-
 	return regionalService, nil
 }
 
-
-
 // deployPipeline performs the deployPipeline request and awaits the resulting operation until it completes, it times out or an error occurs.
 func deployPipeline(ctx context.Context, aiPlatformService *aiplatform.Service, parent string, request *aiplatform.GoogleCloudAiplatformV1CreatePipelineJobRequest) error {
+	fmt.Printf("PARENT: %s; REQUEST: %v", parent, request.PipelineJob)
 	_, err := aiPlatformService.Projects.Locations.PipelineJobs.Create(parent, request.PipelineJob).Do()
-
 	if err != nil {
 		return fmt.Errorf("unable to deploy pipeline: %v", err)
 	}
 	return nil
 }
-
-

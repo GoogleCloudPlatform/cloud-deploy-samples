@@ -16,29 +16,23 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
+
+	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
 	"google.golang.org/api/aiplatform/v1"
-	"os"
-	//"strconv"
-	"cloud.google.com/go/storage"
 )
 
 // Environment variable keys specific to the vertex ai deployer. These are provided via
 // deploy parameters in Cloud Deploy.
 const (
 	pipelineEnvKey = "CLOUD_DEPLOY_customTarget_vertexAIPipeline"
-	// parentEnvKey          = "CLOUD_DEPLOY_customTarget_vertexAIParent"
-	configPathKey  = "CLOUD_DEPLOY_customTarget_vertexAIPipelineJobConfiguration" //?????
+	configPathKey  = "CLOUD_DEPLOY_customTarget_vertexAIPipelineJobConfiguration"
 	paramValsKey   = "CLOUD_DEPLOY_customTarget_vertexAIPipelineJobParameterValues"
 	locValsKey     = "CLOUD_DEPLOY_customTarget_location"
 	projectValsKey = "CLOUD_DEPLOY_customTarget_projectID"
-)
-
-// deploy parameters that the custom target requires to be present and provided during render and deploy operations.
-const (
-	pipelineDPKey = "customTarget/vertexAIPipeline"
-	//parentDPKey   = "customTarget/vertexAIParent"
 )
 
 // requestHandler interface provides methods for handling the Cloud Deploy params.
@@ -49,7 +43,6 @@ type requestHandler interface {
 
 // createRequestHandler creates a requestHandler for the provided Cloud Deploy request.
 func createRequestHandler(cloudDeployRequest interface{}, params *params, gcsClient *storage.Client, service *aiplatform.Service) (requestHandler, error) {
-
 	switch r := cloudDeployRequest.(type) {
 	case *clouddeploy.RenderRequest:
 		return &renderer{
@@ -74,67 +67,78 @@ func createRequestHandler(cloudDeployRequest interface{}, params *params, gcsCli
 
 // params contains the deploy parameter values passed into the execution environment.
 type params struct {
-	parent string
+	// The Project ID for the target environment.
+	project string
 
+	// The location where the ML pipeline will be deployed
+	location string
+
+	//T he pipeline template that is being deployed
 	pipeline string
 
-	modelParams string
-
+	// The directory path where the renderer should look for target-specific configuration
+	// for this deployment, if not provided the renderer will check for a pipelineJob.yaml
+	// file in the root working directory.
 	configPath string
 
-	location string
+	// Pipeline parameters obtained via deploy parameters. Hold parameters necessary
+	// for the createPipelineJobRequest, such as the prompt dataset
+	pipelineParams map[string]string
 }
 
 // determineParams returns the supported params provided in the execution environment via environment variables.
 func determineParams() (*params, error) {
 	location, found := os.LookupEnv(locValsKey)
 	if !found {
-		fmt.Printf("Required environment variable %s not found. Please verify that a valid Vertex AI pipeline resource name was provided through this deploy parameter.\n", locValsKey)
 		return nil, fmt.Errorf("environment variable %s not found", locValsKey)
 	}
 	if location == "" {
-		fmt.Printf("Environment variable %s is empty. Please verify that a valid Vertex AI pipeline resource name was provided through this deploy parameter.\n", locValsKey)
 		return nil, fmt.Errorf("environment variable %s contains empty string", locValsKey)
 	}
 
 	project, found := os.LookupEnv(projectValsKey)
 	if !found {
-		fmt.Printf("Required environment variable %s not found. Please verify that a valid Vertex AI pipeline resource name was provided through this deploy parameter.\n", projectValsKey)
 		return nil, fmt.Errorf("required environment variable %s not found", projectValsKey)
 	}
 	if project == "" {
-		fmt.Printf("Environment variable %s is empty. lease verify that a valid Vertex AI pipeline resource name was provided through this deploy parameter.\n", projectValsKey)
 		return nil, fmt.Errorf("environment variable %s contains empty string", projectValsKey)
 	}
 
-	parent := fmt.Sprintf("projects/%s/locations/%s", project, location)
-
 	pipeline, found := os.LookupEnv(pipelineEnvKey)
 	if !found {
-		fmt.Printf("Required environment variable %s not found. Please verify that a valid Vertex AI pipeline resource name was provided through this deploy parameter.\n", pipelineEnvKey)
 		return nil, fmt.Errorf("required environment variable %s not found", pipelineEnvKey)
 	}
 	if pipeline == "" {
-		fmt.Printf("environment variable %s is empty. Please verify that a valid Vertex AI pipeline resource name was provided through this deploy parameter.\n", pipelineEnvKey)
 		return nil, fmt.Errorf("environment variable %s contains empty string", pipelineEnvKey)
 	}
 
-	modelParams, found := os.LookupEnv(paramValsKey)
+	paramString, found := os.LookupEnv(paramValsKey)
 	if !found {
-		fmt.Printf("Required environment variable %s not found. \n", paramValsKey)
 		return nil, fmt.Errorf("required environment variable %s not found", paramValsKey)
 	}
-	if len(paramValsKey) == 0 {
-		fmt.Printf("environment variable %s is empty.\n", paramValsKey)
+	var pipelineParams map[string]string
+	err := json.Unmarshal([]byte(paramString), &pipelineParams)
+	if err != nil {
+		return nil, fmt.Errorf("unable to unmarshal params json")
+	}
+
+	if len(pipelineParams) == 0 {
 		return nil, fmt.Errorf("environment variable %s contains empty string", paramValsKey)
 	}
 
+	config, found := os.LookupEnv(configPathKey)
+	if !found {
+		return nil, fmt.Errorf("required environment variable %s not found", configPathKey)
+	}
+	if config == "" {
+		return nil, fmt.Errorf("environment variable %s contains empty string", configPathKey)
+	}
+
 	return &params{
-		parent:      parent,
-		pipeline:    pipeline,
-		modelParams: modelParams,
-		configPath:  os.Getenv(configPathKey),
-		location:    location,
-		
+		project:        project,
+		pipeline:       pipeline,
+		configPath:     config,
+		location:       location,
+		pipelineParams: pipelineParams,
 	}, nil
 }

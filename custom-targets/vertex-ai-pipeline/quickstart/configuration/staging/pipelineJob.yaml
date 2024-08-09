@@ -1,13 +1,6 @@
 labels:
   environment: staging
-serviceAccount: 616537680697-compute@developer.gserviceaccount.com
+serviceAccount: $STAGING_PROJECT_NUMBER-compute@developer.gserviceaccount.com
 runtimeConfig:
-  gcsOutputDirectory: gs://$BUCKET_NAME
+  gcsOutputDirectory: gs://$STAGING_BUCKET
   failurePolicy: PIPELINE_FAILURE_POLICY_FAIL_SLOW
-  parameterValues:
-    project_id: scortabarria-internship
-    large_model_reference: text-bison@001
-    preference_dataset: gs://rlhf-artifacts/data/preference/*.jsonl
-    prompt_dataset: gs://rlhf-artifacts/data/prompt/*.jsonl
-templateUri: https://us-central1-kfp.pkg.dev/scortabarria-internship/scortabarria-internship-rlhf-pipelines/rlhf-tune-pipeline/sha256:e739c5c310d406f8a6a9133b0c97bf9a249715da0a507505997ced042e3e0f17
-displayName: test-pipeline
