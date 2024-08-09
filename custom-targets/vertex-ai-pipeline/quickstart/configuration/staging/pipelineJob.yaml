@@ -1,0 +1,6 @@
+labels:
+  environment: staging
+serviceAccount: $STAGING_PROJECT_NUMBER-compute@developer.gserviceaccount.com
+runtimeConfig:
+  gcsOutputDirectory: gs://$STAGING_BUCKET
+  failurePolicy: PIPELINE_FAILURE_POLICY_FAIL_SLOW

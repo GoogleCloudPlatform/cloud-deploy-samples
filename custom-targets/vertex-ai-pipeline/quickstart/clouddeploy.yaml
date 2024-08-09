@@ -1,0 +1,62 @@
+# Copyright 2023 Google LLC
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+#     https:#www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: pipeline-cd
+serialPipeline:
+  stages:
+  - targetId: staging-environment
+    profiles: []
+  - targetId: prod-environment
+    profiles: []
+---
+
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: staging-environment
+customTarget:
+  customTargetType: vertex-ai-pipeline
+deployParameters:
+  customTarget/vertexAIPipelineJobConfiguration: "staging/pipelineJob.yaml"
+  customTarget/projectID: "$STAGING_PROJECT_ID"
+  customTarget/location: "$STAGING_REGION"
+  customTarget/vertexAIPipelineJobParameterValues: '{
+    "preference_dataset": "$STAGING_PREF_DATA",
+    "prompt_dataset": "$STAGING_PROMPT_DATA",
+    "large_model_reference": "$LARGE_MODEL_REFERENCE",
+    "model_display_name": "$MODEL_DISPLAY_NAME"
+  }'
+
+
+---
+
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: prod-environment
+customTarget:
+  customTargetType: vertex-ai-pipeline
+deployParameters:
+  customTarget/vertexAIPipelineJobConfiguration: "production/pipelineJob.yaml"
+  customTarget/vertexAIPipelineJobParameterValues: '{
+    "preference_dataset": "$PROD_PREF_DATA",
+    "prompt_dataset": "$PROD_PROMPT_DATA",
+    "large_model_reference": "$LARGE_MODEL_REFERENCE",
+    "model_display_name": "$MODEL_DISPLAY_NAME"
+  }'
+  customTarget/projectID: "$PROD_PROJECT_ID"
+  customTarget/location: "$PROD_REGION"
+

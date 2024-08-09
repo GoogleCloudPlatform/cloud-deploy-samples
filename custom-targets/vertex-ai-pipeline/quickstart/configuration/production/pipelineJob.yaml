@@ -1,0 +1,6 @@
+labels:
+  environment: production
+serviceAccount: $PROD_PROJECT_NUMBER-compute@developer.gserviceaccount.com
+runtimeConfig:
+  gcsOutputDirectory: gs://$PROD_BUCKET
+  failurePolicy: PIPELINE_FAILURE_POLICY_FAIL_FAST
