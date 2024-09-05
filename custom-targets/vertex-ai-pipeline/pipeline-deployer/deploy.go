@@ -25,7 +25,7 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-const aiDeployerSampleName = "clouddeploy-vertex-ai-sample"
+const aiDeployerSampleName = "clouddeploy-vertex-ai-pipeline-sample"
 
 const localManifest = "manifest.yaml"
 
