@@ -18,7 +18,7 @@ type postDeployHookResult struct {
 	Metadata map[string]string `json:"metadata,omitempty"`
 }
 
-// UploadResult uploads the provided deploy result to the Cloud Storage path where Cloud Deploy expects it.
+// uploadResult uploads the provided deploy result to the Cloud Storage path where Cloud Deploy expects it.
 func uploadResult(ctx context.Context, gcsClient *storage.Client, deployHookResult *postDeployHookResult) error {
 	// This environment variable is provided by Cloud Deploy and the value is
 	// where to upload a results file.

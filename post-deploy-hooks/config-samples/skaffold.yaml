@@ -16,6 +16,6 @@ customActions:
     # If you only want to delete resources in specific namespaces and/or only
     # specific resource types, uncomment the below and update with your values
     # to pass command line args to the container. 
-    args:
+    # args:
     # - --namespace=foo,bar
     # - --resource-type=Replicaset,ciliumidentity.cilium.io

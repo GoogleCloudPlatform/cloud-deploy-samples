@@ -25,9 +25,9 @@ the image you built.
 gcloud container clusters create-auto cleanup-prod --project=PROJECT_ID --region=REGION
 ```
 4. Do not disable cloud deploy labels via an org policy. If you have an org
-policy set that disables labels, this won’t work. This is because kubernetes 
-query uses the Cloud Deploy labels to filter to resources that were deployed
-by Cloud Deploy.
+policy set that disables labels, this won’t work. This is because the kubernetes 
+query used in this sample uses the Cloud Deploy labels to filter to resources
+that were deployed by Cloud Deploy.
 
 Lastly, a quick note that if you have this postdeploy job configured then you
 should provide all resources in your manifests when creating a release, even if

@@ -104,9 +104,10 @@ func (ce CommandExecutor) resourceTypesToQuery(resourceType string) ([]string, e
 	return resourceTypes, nil
 }
 
-// listResources returns a list of resources, filtered by resource type, namespace,
-// and were deployed by Cloud Deploy. If includeReleaseLabel is true, it filtered
-// to resources that were deployed by the current release.
+// listResources returns a list of resources that were deployed by Cloud Deploy,
+// filtered by resource type and namespace. If includeReleaseLabel is true, the
+// resutls are further filtered to resources that were deployed by the current
+// release.
 func (ce CommandExecutor) listResources(includeReleaseLabel bool, namespaces string, resourceTypes []string) ([]string, error) {
 
 	var resources []string
