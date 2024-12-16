@@ -1,0 +1,21 @@
+apiVersion: skaffold/v4beta7
+kind: Config
+manifests:
+  rawYaml:
+  - kubernetes.yaml
+deploy:
+  kubectl: {}
+customActions:
+- name: postdeploy-action
+  containers:
+  - name: clean-up-image
+    # Replace the below with the image you built from this code, for example:
+    # us-central1-docker.pkg.dev/my-project/my-repo/clean-up-image:latest
+    image: IMAGE
+    command: ["/cleanup-kubernetes-resources"]
+    # If you only want to delete resources in specific namespaces and/or only
+    # specific resource types, uncomment the below and update with your values
+    # to pass command line args to the container. 
+    # args:
+    # - --namespace=foo,bar
+    # - --resource-type=Replicaset,ciliumidentity.cilium.io
