@@ -48,7 +48,7 @@ should provide all resources in your manifests when creating a release, even if
 there's no change to prevent deletions. 
 
 # Building and pushing the image to a repo
-1. In the directory of this QUICKSTART, run the following command to build the image:
+1. Cd to the k8s-cleanup directory, and run the following command to build the image:
 
 ```
 docker build --tag <REPO-TAG> . 
