@@ -13,8 +13,8 @@ func TestKubectlGetArgs(t *testing.T) {
 	os.Setenv(targetEnvKey, "mytarget")
 	os.Setenv(projectEnvKey, "myproject")
 	os.Setenv(locationEnvKey, "us-central1")
-	labels := "-l deploy.cloud.google.com/delivery-pipeline-id=mypipeline,deploy.cloud.google.com/target-id=mytarget,deploy.cloud.google.com/location=losangeles,deploy.cloud.google.com/project-id=myproject"
-	labelsWithRelease := "-l deploy.cloud.google.com/release-id=myrelease,deploy.cloud.google.com/delivery-pipeline-id=mypipeline,deploy.cloud.google.com/target-id=mytarget,deploy.cloud.google.com/location=losangeles,deploy.cloud.google.com/project-id=myproject"
+	labels := "-l deploy.cloud.google.com/delivery-pipeline-id=mypipeline,deploy.cloud.google.com/target-id=mytarget,deploy.cloud.google.com/location=us-central1,deploy.cloud.google.com/project-id=myproject"
+	labelsWithRelease := "-l deploy.cloud.google.com/release-id=myrelease,deploy.cloud.google.com/delivery-pipeline-id=mypipeline,deploy.cloud.google.com/target-id=mytarget,deploy.cloud.google.com/location=us-central1,deploy.cloud.google.com/project-id=myproject"
 
 	for _, tc := range []struct {
 		name                string
