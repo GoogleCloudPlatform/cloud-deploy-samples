@@ -89,9 +89,9 @@ An overview
 of the configuration files:
 1. `clouddeploy.yaml`: Defines a Delivery Pipeline that references a single
 [GKE Target](https://cloud.google.com/deploy/docs/deploy-app-gke) and specifies
-a postdeploy action `postdeploy-action`.
+a postdeploy action `cleanup-action`.
 1. `kubernetes.yaml`: Defines an Deployment and Service that will be applied to the cluster.
-1. `skaffold.yaml`: Defines a custom action `postdeploy-action` which is referenced in the clouddeploy.yaml. 
+1. `skaffold.yaml`: Defines a custom action `cleanup-action` which is referenced in the clouddeploy.yaml. 
 Within that customAction stanza there is a reference to the image that was
 built above. 
 
@@ -111,29 +111,31 @@ gcloud deploy apply --file=clouddeploy.yaml --region=REGION --project=PROJECT_ID
 # Create a release and at the end the postdeploy hook will run
 
 Create a release and after the release has been deployed to the cluster, the
-postdeploy hook will run and delete any old resources that were previously 
-deploy by Cloud Deploy. If you're using the sample, the command would look 
+postdeploy hook will run. If you're using the sample, the command would look 
 something like the below command. 
 
 ```
 gcloud deploy releases create my-release --project=PROJECT_ID --region=REGION --delivery-pipeline=mypipeline --images=my-app-image=gcr.io/google-containers/nginx@sha256:f49a843c290594dcf4d193535d1f4ba8af7d56cea2cf79d1e9554f077f1e7aaa
 ```
 
-Note: Unless you've used Cloud Deploy before to deploy to that cluster, nothing
-will be deleted. If you create a second release `my-release2`, then the postdeploy
-hook will actually do something and delete any resources that were deployed as
-part of `my-release`. 
-
 The `--images=` flag replaces the placeholder (my-app-image) in the kubernetes 
 manifest with the specific, SHA-qualified image. In the case of the samples, 
 an nginx container.
+
+Now create another release, so that the postdeploy hook will actually do 
+something and delete resources from the previous release `my-release`:
+
+```
+gcloud deploy releases create my-release2 --project=PROJECT_ID --region=REGION --delivery-pipeline=mypipeline --images=my-app-image=gcr.io/google-containers/nginx@sha256:f49a843c290594dcf4d193535d1f4ba8af7d56cea2cf79d1e9554f077f1e7aaa
+```
 
 # Additional configuration options
 
 There are two command line flags you can pass to the container:
 
 1. `namespace`: Namespace(s) to filter on when finding resources to delete. For 
-    multiple namespaces, separate them with a comma (e.g. `namespace=foo,bar`)
+    multiple namespaces, separate them with a comma (e.g. `namespace=foo,bar`).
+    The default is to delete across all namespaces.
 2. `resource-type`: Comma separated list of resource type(s) to filter on when finding resources to
     delete. If you want to add a few more to the default list, copy and paste
     the following, and add your own:
