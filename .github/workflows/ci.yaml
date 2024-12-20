@@ -11,3 +11,6 @@ jobs:
       - name: Test the model deployer
         working-directory: ./custom-targets/vertex-ai/model-deployer
         run: go test -cover
+      - name: Test the postdeploy hook sample
+        working-directory: ./postdeploy-hooks
+        run: go test -v
