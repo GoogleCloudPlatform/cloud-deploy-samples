@@ -1,0 +1,22 @@
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: mypipeline
+description: pipeline that includes a post-deploy hook to clean up resources
+serialPipeline:
+  stages:
+  - targetId: cleanup-prod
+    profiles: []
+    strategy:
+      standard:
+        postdeploy:
+          actions: ["cleanup-action"]
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: cleanup-prod
+description: prod cluster
+gke:
+  # Replace PROJECT_ID and REGION below.
+  cluster: projects/PROJECT-ID/locations/REGION/clusters/cleanup-prod
