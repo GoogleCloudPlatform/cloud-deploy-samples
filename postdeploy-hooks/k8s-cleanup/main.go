@@ -15,7 +15,7 @@ var (
 		"For multiple namespaces, separate them with a comma. For example --namespace=foo,bar. By default "+
 		"resources will be deleted across all namespaces.")
 	resourceType = flag.String("resource-type",
-		"service,cronjob.batch,job.batch,deployment.apps,replicaset.apps,statefulset.apps,pod,configmap,secret,horizontalpodautoscaler.autoscaling",
+		"service,cronjob.batch,job.batch,deployment.apps,statefulset.apps,pod,configmap,secret,horizontalpodautoscaler.autoscaling",
 		"Comma separated list of resource type(s) to filter on when finding "+
 			"resources to delete. See default list above of resources that will"+
 			"be deleted. To have ALL resources deleted pass in \"all\". "+

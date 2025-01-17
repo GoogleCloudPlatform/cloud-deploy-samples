@@ -9,6 +9,7 @@ steps:
       go build -C custom-targets/terraform/terraform-deployer
       go build -C custom-targets/infrastructure-manager/im-deployer
       go build -C custom-targets/vertex-ai/model-deployer
+      go build -C postdeploy-hooks/k8s-cleanup
       go build -C colors-e2e/colors-be
       go build -C colors-e2e/colors-fd
   - name: docker
@@ -18,3 +19,4 @@ steps:
         docker build custom-targets/terraform/terraform-deployer
         docker build custom-targets/infrastructure-manager/im-deployer
         docker build custom-targets/vertex-ai/model-deployer
+        docker build postdeploy-hooks/k8s-cleanup
