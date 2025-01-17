@@ -104,16 +104,25 @@ CLUSTER_ID=quickstart-k8s-cleanup
 gcloud container clusters create-auto $CLUSTER_ID --project=$PROJECT_ID --region=$REGION
 ```
 
+This will take some time, up to ten minutes.
+
 ## 6. Create delivery pipeline and target
 
-Replace the placeholders in the `configuration` directory with your environment
-variable values:
+The `configuration` directory contains a set of files to create Cloud Deploy
+Pipeline and use that pipeline to deploy a workload into the newly-created GKE
+cluster.
+
+The [`clouddeploy.yaml` file](configuration/clouddeploy.yaml) contains a
+definition for a Cloud Deploy pipeline with a single GKE target. It specifies a
+postdeploy action named `cleanup-action`.
+
+Run these commands to modify the GKE Target resource in that file to point it to
+the GKE cluster:
 
 ```shell
-sed -i "s%\$PROJECT_ID%${PROJECT_ID}%g" ./configuration/*
-sed -i "s%\$REGION%${REGION}%g" ./configuration/*
-sed -i "s%\$CLUSTER_ID%${CLUSTER_ID}%g" ./configuration/*
-sed -i "s%\$K8S_CLEANUP_IMAGE%${IMAGE}%g" ./configuration/*
+sed -i "s%\$PROJECT_ID%${PROJECT_ID}%g" ./configuration/clouddeploy.yaml
+sed -i "s%\$REGION%${REGION}%g" ./configuration/clouddeploy.yaml
+sed -i "s%\$CLUSTER_ID%${CLUSTER_ID}%g" ./configuration/clouddeploy.yaml
 ```
 
 Apply the Cloud Deploy configuration:
@@ -122,12 +131,25 @@ Apply the Cloud Deploy configuration:
 gcloud deploy apply --file=configuration/clouddeploy.yaml --project=$PROJECT_ID --region=$REGION
 ```
 
+The defintion for the postdeploy action lives in the [`skaffold.yaml`] file. It
+tells Skaffold which container to run and which arguments to provide to that
+container.
+
+Replace the `$K8s_CLEANUP_IMAGE` placeholder in that file with the image that we
+just built:
+
+```shell
+sed -i "s%\$K8S_CLEANUP_IMAGE%${IMAGE}%g" ./configuration/skaffold.yaml
+```
+
 ## 7. Create a release
 
 Create a Cloud Deploy release for the configuration defined in the
-`configuration` directory. This will automatically create a rollout that deploys
-the `k8s-cleanup-deployment-orig` Deployment resource from
-`configuration/kubernetes.yaml` to the cluster we created in step 5.
+`configuration` directory. The
+[`kubernetes.yaml` file](configuration/kubernetes.yaml), which is referenced
+from the [`skaffold.yaml` file](configuration/skaffold.yaml) contains a single
+Deployment resource named `k8s-cleanup-deployment-orig`. Creating this release
+will use Cloud Deploy to create this Deployment on the cluster.
 
 ```shell
 gcloud deploy releases create release-001 \
@@ -137,6 +159,11 @@ gcloud deploy releases create release-001 \
     --source=configuration \
     --images=my-app-image=gcr.io/google-containers/nginx@sha256:f49a843c290594dcf4d193535d1f4ba8af7d56cea2cf79d1e9554f077f1e7aaa
 ```
+
+Notice the --images= flag, which you use to replace the placeholder
+(my-app-image) in the manifest with the specific, SHA-qualified image. Google
+recommends that you templatize your manifests this way, and that you use
+SHA-qualified image names at release creation.
 
 [Open the Cloud Deploy UI](https://console.cloud.google.com/deploy), click on
 the `k8s-cleanup-qs` pipeline, then the `release-001` release, and on the
@@ -179,6 +206,12 @@ It will then proceed to delete the Deployment, the ReplicaSet, and the Pod from
 the previous release.
 
 ## 9. Cleanup
+
+Delete the Cloud Deploy resources we created in steps 6–8:
+
+```shell
+gcloud deploy delete --file=configuration/clouddeploy.yaml --project=$PROJECT_ID --region=$REGION
+```
 
 Delete the GKE cluster we created in step 5:
 
