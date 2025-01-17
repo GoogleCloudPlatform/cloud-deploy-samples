@@ -9,7 +9,6 @@ a command line flag:
 * cronjob.batch
 * job.batch
 * deployment.apps
-* replicaset.apps
 * statefulset.apps
 * pod
 * configmap
