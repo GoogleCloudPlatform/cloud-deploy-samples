@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-deployment-new
+  name: k8s-cleanup-deployment-orig
   labels:
     app: my-app
   namespace: default
@@ -18,15 +18,3 @@ spec:
       containers:
       - name: nginx
         image: my-app-image
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: my-service
-  namespace: default
-spec:
-  selector:
-    app: my-app
-  ports:
-    - protocol: TCP
-      port: 80
