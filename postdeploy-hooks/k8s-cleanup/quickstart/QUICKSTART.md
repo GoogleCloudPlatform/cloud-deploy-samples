@@ -108,7 +108,7 @@ This will take some time, up to ten minutes.
 
 ## 6. Create delivery pipeline and target
 
-The `configuration` directory contains a set of files to create Cloud Deploy
+The `configuration` directory contains a set of files to create a Cloud Deploy
 Pipeline and use that pipeline to deploy a workload into the newly-created GKE
 cluster.
 
