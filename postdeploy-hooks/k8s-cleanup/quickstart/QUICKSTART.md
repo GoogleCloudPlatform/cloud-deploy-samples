@@ -199,11 +199,11 @@ When you navigate to the rollout for this release and look at the logs for the
 Postdeploy job, now you'll see that there are a number of resources to be
 deleted:
 
-`[clean-up-image] Beginning to delete resources, there are 3 resources to
+`[clean-up-image] Beginning to delete resources, there are 2 resources to
 delete`
 
-It will then proceed to delete the Deployment, the ReplicaSet, and the Pod from
-the previous release.
+It will then proceed to delete the Deployment and the Pod from the previous
+release.
 
 ## 9. Cleanup
 

@@ -54,7 +54,6 @@ By default, it deletes the following resource types (and in this order):
 *   `cronjob.batch`
 *   `job.batch`
 *   `deployment.apps`
-*   `replicaset.apps`
 *   `statefulset.apps`
 *   `pod`
 *   `configmap`
@@ -64,8 +63,7 @@ By default, it deletes the following resource types (and in this order):
 To delete all resource types, use `--resource-type=all`.
 
 To make changes to the default (e.g., adding or removing resources), the
-simplest thing is to
-[copy the default list from the source code](https://github.com/GoogleCloudPlatform/cloud-deploy-samples/blob/main/postdeploy-hooks/k8s-cleanup/main.go#L18)
+simplest thing is to [copy the default list from the source code](main.go#L17)
 and add additional resources to it.
 
 ## Quickstart
