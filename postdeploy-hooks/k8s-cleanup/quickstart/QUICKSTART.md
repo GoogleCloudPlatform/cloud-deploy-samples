@@ -1,147 +1,228 @@
-# Kubernetes Resource Clean Up
-This contains a sample container that can be used to clean up Kubernetes
-resources that were deployed by Cloud Deploy. It should be used as a [postdeploy
-hook](https://cloud.google.com/deploy/docs/hooks) (a configuration example is provided below). By default, it deletes the 
-following resource types and in this order, however this can be overridden with 
-a command line flag:
+# Kubernetes Resource Clean Up Quickstart
 
-* service
-* cronjob.batch
-* job.batch
-* deployment.apps
-* statefulset.apps
-* pod
-* configmap
-* secret
-* horizontalpodautoscaler.autoscaling
+This contains source code for a container that can be used to clean up
+Kubernetes resources that were deployed by Cloud Deploy. It should be used as a
+[postdeploy hook](https://cloud.google.com/deploy/docs/hooks). A configuration
+example is provided as part of this quickstart.
 
-At a high level, the sample image:
-1. Gets a list of kubernetes resources that were deployed by Cloud Deploy in the 
-   **current** release, filtered to the pipeline, target, project-id and
-   location.
-2. Gets a list of **all** kubernetes resources that were deployed by Cloud Deploy
-   on the cluster, filtered to the pipeline, target, project-id and location.
-3. Does a diff and deletes any resources that were not deployed as part of the
-   current release (i.e. deletes all the old resources).
+See [the README](../README.md) for more information on how the container works
+and what configuration is available.
 
-# Prerequisites
-1. You will need to build the image and push it to a repository, accessible by
-Cloud Build.
-2. There is a sample clouddeploy.yaml, kubernetes.yaml and skaffold.yaml file in
-the config-sample directory. Either use those and replace the PROJECT_ID, 
-REGION, and IMAGE values or update your existing Cloud Deploy config
-file to reference a postdeploy hook, and your Skaffold file to then reference
-the image you built.
-3. If using the samples, create a GKE cluster (note this can take 10 min to run):
+## 1. Clone Repository
 
-```
-gcloud container clusters create-auto cleanup-prod --project=PROJECT_ID --region=REGION
-```
-4. Do not disable cloud deploy labels via an org policy. If you have an org
-policy set that disables labels, this won’t work. This is because kubernetes 
-query uses the Cloud Deploy labels to filter to resources that were deployed
-by Cloud Deploy.
+Clone this repository and navigate to the quickstart directory
+(`cloud-deploy-samples/postdeploy-hooks/k8s-cleanup/quickstart`) since the
+commands provided expect to be executed from that directory.
 
-Lastly, a quick note that if you have this postdeploy job configured then you
-should provide all resources in your manifests when creating a release, even if
-there's no change to prevent deletions. 
+## 2. Environment variables
 
-# Building and pushing the image to a repo
-1. Cd to the k8s-cleanup directory, and run the following command to build the image:
+To simplify the commands in this quickstart, set the following environment
+variables with your values:
 
-```
-docker build --tag <REPO-TAG> . 
+```shell
+PROJECT_ID="YOUR_PROJECT_ID"
+REGION="YOUR_REGION"
 ```
 
-For example, if you're pushing to an Artifact Registry with:
-* region=us-central1
-* project=my-project
-* docker repo=my-repo
-* you'd like to name the image clean-up-image
+## 3. Prerequisites
 
-The command would look like this:
+### APIs
 
-```
-docker build --tag us-central1-docker.pkg.dev/my-project/my-repo/clean-up-image .
+Enable the Cloud Deploy API and Kubernetes Engine API.
+
+```shell
+gcloud services enable clouddeploy.googleapis.com container.googleapis.com --project $PROJECT_ID
 ```
 
-2. After the build is complete, push the image to the repository:
+You cannot use this container with
+[the Organization Policy that disables Cloud Deploy's automatic labels](https://cloud.google.com/deploy/docs/labels-annotations#disabling_automatic_labels).
+This container relies on those automatic labels to find the relevant Kubernetes
+resources.
 
-```
-docker push <REPO-PATH>
-```
+### Permissions
 
-Sticking with the example above, the command would be:
+Make sure the default compute service account,
+`{project_number}-compute@developer.gserviceaccount.com`, used by Cloud Deploy
+has sufficient permissions:
 
-```
-docker push us-central1-docker.pkg.dev/my-project/my-repo/clean-up-image
-```
+1.  `clouddeploy.jobRunner` role:
 
-# Update your config or use the sample configs
+    ```shell
+    gcloud projects add-iam-policy-binding $PROJECT_ID \
+        --member=serviceAccount:$(gcloud projects describe $PROJECT_ID \
+        --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
+        --role="roles/clouddeploy.jobRunner"
+    ```
 
-If you're using the sample config, go to the `config-samples` folder, and replace
-the PROJECT_ID and REGION in the clouddeploy.yaml file. Replace the IMAGE in the
-skaffold.yaml file with the image you built from this code. Save the three
-config files. 
+2.  `container.developer` role:
 
-An overview
-of the configuration files:
-1. `clouddeploy.yaml`: Defines a Delivery Pipeline that references a single
-[GKE Target](https://cloud.google.com/deploy/docs/deploy-app-gke) and specifies
-a postdeploy action `cleanup-action`.
-1. `kubernetes.yaml`: Defines an Deployment and Service that will be applied to the cluster.
-1. `skaffold.yaml`: Defines a custom action `cleanup-action` which is referenced in the clouddeploy.yaml. 
-Within that customAction stanza there is a reference to the image that was
-built above. 
+    ```shell
+    gcloud projects add-iam-policy-binding $PROJECT_ID \
+        --member=serviceAccount:$(gcloud projects describe $PROJECT_ID \
+        --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
+        --role="roles/container.developer"
+    ```
 
-If you're updating your own configuration files, update your clouddeploy.yaml
-to reference a postdeploy hook action and your skaffold.yaml to define that
-custom action.
+## 4. Build the image
 
-# Register your pipeline and target with Cloud Deploy
+First, create an Artifact Registry repository to store the image and set up
+Docker authentication for that repository.
 
-This assumes your clouddeploy.yaml is in the same directory, if not update the 
-`--file` arg to point to the full path.
-
-```
-gcloud deploy apply --file=clouddeploy.yaml --region=REGION --project=PROJECT_ID
-```
-
-# Create a release and at the end the postdeploy hook will run
-
-Create a release and after the release has been deployed to the cluster, the
-postdeploy hook will run. If you're using the sample, the command would look 
-something like the below command. 
-
-```
-gcloud deploy releases create my-release --project=PROJECT_ID --region=REGION --delivery-pipeline=mypipeline --images=my-app-image=gcr.io/google-containers/nginx@sha256:f49a843c290594dcf4d193535d1f4ba8af7d56cea2cf79d1e9554f077f1e7aaa
+```shell
+gcloud artifacts repositories create cd-k8s-cleanup \
+    --location "$REGION" --project "$PROJECT_ID" \
+    --repository-format docker
+gcloud -q auth configure-docker $REGION-docker.pkg.dev
 ```
 
-The `--images=` flag replaces the placeholder (my-app-image) in the kubernetes 
-manifest with the specific, SHA-qualified image. In the case of the samples, 
-an nginx container.
+Next, give the default compute service account access to read from this
+repository:
 
-Now create another release, so that the postdeploy hook will actually do 
-something and delete resources from the previous release `my-release`:
-
+```shell
+gcloud -q artifacts repositories add-iam-policy-binding \
+    --project "${PROJECT}" --location "${REGION}" cd-k8s-cleanup \
+    --member=serviceAccount:$(gcloud -q projects describe $PROJECT --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
+    --role="roles/artifactregistry.reader"
 ```
-gcloud deploy releases create my-release2 --project=PROJECT_ID --region=REGION --delivery-pipeline=mypipeline --images=my-app-image=gcr.io/google-containers/nginx@sha256:f49a843c290594dcf4d193535d1f4ba8af7d56cea2cf79d1e9554f077f1e7aaa
+
+Finally, set the image's location in an environment variable for use in future
+steps, then build and push the image:
+
+```shell
+IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/cd-k8s-cleanup/k8s-cleanup
+docker build --tag $IMAGE ..
+docker push $IMAGE
 ```
 
-# Additional configuration options
+## 5. Create a Google Kubernetes Engine cluster
 
-There are two command line flags you can pass to the container:
+Create a GKE cluster for the quickstart. Use the following command to create the
+cluster and set the ID as an environment variable for a future step:
 
-1. `namespace`: Namespace(s) to filter on when finding resources to delete. For 
-    multiple namespaces, separate them with a comma (e.g. `namespace=foo,bar`).
-    The default is to delete across all namespaces.
-2. `resource-type`: Comma separated list of resource type(s) to filter on when finding resources to
-    delete. If you want to add a few more to the default list, copy and paste
-    the following, and add your own:
-    "service,cronjob.batch,job.batch,deployment.apps,replicaset.apps,statefulset.apps,pod,configmap,secret,horizontalpodautoscaler.autoscaling"/
-    Note that order is preserved - the order of the list is the order in which
-    resources will be deleted. If you want to delete ALL resources, pass in
-    "all" (i.e. `resource-type=all`)
+```shell
+CLUSTER_ID=quickstart-k8s-cleanup
+gcloud container clusters create-auto $CLUSTER_ID --project=$PROJECT_ID --region=$REGION
+```
 
-Add the args in your skaffold config file in the customActions.containers
-stanza. See the sample skaffold.yaml file for an example that's commented out.
+This will take some time, up to ten minutes.
+
+## 6. Create delivery pipeline and target
+
+The `configuration` directory contains a set of files to create a Cloud Deploy
+Pipeline and use that pipeline to deploy a workload into the newly-created GKE
+cluster.
+
+The [`clouddeploy.yaml` file](configuration/clouddeploy.yaml) contains a
+definition for a Cloud Deploy pipeline with a single GKE target. It specifies a
+postdeploy action named `cleanup-action`.
+
+Run these commands to modify the GKE Target resource in that file to point it to
+the GKE cluster:
+
+```shell
+sed -i "s%\$PROJECT_ID%${PROJECT_ID}%g" ./configuration/clouddeploy.yaml
+sed -i "s%\$REGION%${REGION}%g" ./configuration/clouddeploy.yaml
+sed -i "s%\$CLUSTER_ID%${CLUSTER_ID}%g" ./configuration/clouddeploy.yaml
+```
+
+Apply the Cloud Deploy configuration:
+
+```shell
+gcloud deploy apply --file=configuration/clouddeploy.yaml --project=$PROJECT_ID --region=$REGION
+```
+
+The defintion for the postdeploy action lives in the [`skaffold.yaml`] file. It
+tells Skaffold which container to run and which arguments to provide to that
+container.
+
+Replace the `$K8s_CLEANUP_IMAGE` placeholder in that file with the image that we
+just built:
+
+```shell
+sed -i "s%\$K8S_CLEANUP_IMAGE%${IMAGE}%g" ./configuration/skaffold.yaml
+```
+
+## 7. Create a release
+
+Create a Cloud Deploy release for the configuration defined in the
+`configuration` directory. The
+[`kubernetes.yaml` file](configuration/kubernetes.yaml), which is referenced
+from the [`skaffold.yaml` file](configuration/skaffold.yaml) contains a single
+Deployment resource named `k8s-cleanup-deployment-orig`. Creating this release
+will use Cloud Deploy to create this Deployment on the cluster.
+
+```shell
+gcloud deploy releases create release-001 \
+    --delivery-pipeline=k8s-cleanup-qs \
+    --project=$PROJECT_ID \
+    --region=$REGION \
+    --source=configuration \
+    --images=my-app-image=gcr.io/google-containers/nginx@sha256:f49a843c290594dcf4d193535d1f4ba8af7d56cea2cf79d1e9554f077f1e7aaa
+```
+
+Notice the --images= flag, which you use to replace the placeholder
+(my-app-image) in the manifest with the specific, SHA-qualified image. Google
+recommends that you templatize your manifests this way, and that you use
+SHA-qualified image names at release creation.
+
+[Open the Cloud Deploy UI](https://console.cloud.google.com/deploy), click on
+the `k8s-cleanup-qs` pipeline, then the `release-001` release, and on the
+rollout for this release. You'll notice the rollout has a "Postdeploy" job.
+
+Click on the Postdeploy job to inspect the logs. Towards the bottom of the logs,
+you'll see this message:
+
+`[clean-up-image] There are no resources to delete`
+
+Since this is the first release, this is expected.
+
+## 8. Create a release with a different Deployment resource
+
+Next, let's rename the Deployment resource in the `kubernetes.yaml` file:
+
+```shell
+sed -i "s/k8s-cleanup-deployment-orig/k8s-cleanup-deployment-new/" ./configuration/kubernetes.yaml
+```
+
+Now we'll make another release:
+
+```shell
+gcloud deploy releases create release-002 \
+    --delivery-pipeline=k8s-cleanup-qs \
+    --project=$PROJECT_ID \
+    --region=$REGION \
+    --source=configuration \
+    --images=my-app-image=gcr.io/google-containers/nginx@sha256:f49a843c290594dcf4d193535d1f4ba8af7d56cea2cf79d1e9554f077f1e7aaa
+```
+
+When you navigate to the rollout for this release and look at the logs for the
+Postdeploy job, now you'll see that there are a number of resources to be
+deleted:
+
+`[clean-up-image] Beginning to delete resources, there are 2 resources to
+delete`
+
+It will then proceed to delete the Deployment and the Pod from the previous
+release.
+
+## 9. Cleanup
+
+Delete the Cloud Deploy resources we created in steps 6–8:
+
+```shell
+gcloud deploy delete --file=configuration/clouddeploy.yaml --project=$PROJECT_ID --region=$REGION
+```
+
+Delete the GKE cluster we created in step 5:
+
+```shell
+gcloud container clusters delete quickstart-k8s-cleanup \
+    --region=$REGION --project=$PROJECT_ID
+```
+
+And delete the Artifact Registry repo we created in step 4:
+
+```shell
+gcloud artifacts repositories delete cd-k8s-cleanup \
+    --location=$REGION --project=$PROJECT_ID
+```

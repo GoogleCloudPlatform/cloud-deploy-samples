@@ -149,6 +149,11 @@ func (ce CommandExecutor) resourcesPerType(includeReleaseLabel bool, namespaces 
 
 // deleteResources deletes the given resources.
 func (ce CommandExecutor) deleteResources(resources []string) error {
+	if len(resources) == 0 {
+		fmt.Printf("There are no resources to delete\n")
+		return nil
+	}
+
 	fmt.Printf("Beginning to delete resources, there are %d resources to delete\n", len(resources))
 	for _, resource := range resources {
 		args := []string{"delete", resource, "--ignore-not-found=true"}

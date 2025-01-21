@@ -1,11 +1,11 @@
 apiVersion: deploy.cloud.google.com/v1
 kind: DeliveryPipeline
 metadata:
-  name: mypipeline
+  name: k8s-cleanup-qs
 description: pipeline that includes a post-deploy hook to clean up resources
 serialPipeline:
   stages:
-  - targetId: cleanup-prod
+  - targetId: k8s-cleanup-qs-prod
     profiles: []
     strategy:
       standard:
@@ -15,8 +15,7 @@ serialPipeline:
 apiVersion: deploy.cloud.google.com/v1
 kind: Target
 metadata:
-  name: cleanup-prod
-description: prod cluster
+  name: k8s-cleanup-qs-prod
+description: k8s-cleanup quickstart prod cluster
 gke:
-  # Replace PROJECT_ID and REGION below.
-  cluster: projects/PROJECT-ID/locations/REGION/clusters/cleanup-prod
+  cluster: projects/$PROJECT_ID/locations/$REGION/clusters/$CLUSTER_ID
