@@ -18,6 +18,7 @@ The configuration provided when creating a Cloud Deploy Release must contain a [
 | --- | --- | --- |
 | customTarget/helmGKECluster| Yes | Name of the GKE cluster the Helm chart is deployed to, e.g. `projects/{project}/locations/{location}/clusters/{cluster}` |
 | customTarget/helmConfigurationPath | No | Path to the Helm chart in the Cloud Deploy release archive. If not provided then defaults to `mychart` in the root directory of the archive |
+| customTarget/helmNamespace| No | The namespace for the helm requests. Uses default namespace when not provided |
 | customTarget/helmTemplateLookup | No | Whether to handle lookup functions when performing `helm template` for the informational release manifest, requires connecting to the cluster at render time |
 | customTarget/helmTemplateValidate | No | Whether to validate the manifest produced by `helm template` against the cluster, requires connecting to the cluster at render time |
 | customTarget/helmUpgradeTimeout | No | Timeout duration when performing `helm upgrade`, if unset relies on Helm default |
@@ -53,6 +54,8 @@ The render process consists of the following steps:
 
     b. If `customTarget/helmTemplateValidate` is `true` then `--validate` arg is used.
 
+    c. If `customTarget/helmNamespace` is defined then `--namespace=${customTarget/helmNamespace}` arg is used.
+
 4. Upload to Cloud Storage the manifest produced by `helm template` to be used as the [Cloud Deploy Release inspector](https://cloud.google.com/deploy/docs/view-release#view_release_artifacts) artifact.
 
 5. Upload the configuration to Cloud Storage so the Helm chart is available at deploy time.
@@ -67,5 +70,9 @@ The deploy process consists of the following steps:
 3. Run `helm upgrade` for the provided Helm chart using the Cloud Deploy Delivery Pipeline ID as the Helm Release name.
 
     a. If `customTarget/helmUpgradeTimeout` is set, e.g. `10m`, then `--timeout=10m` arg is used.
+    
+    b. If `customTarget/helmNamespace` is defined then `--namespace=${customTarget/helmNamespace}` arg is used.
 
 4. Run `helm get manifest` to get the manifest applied by the Helm Release and upload it to Cloud Storage as a Cloud Deploy deploy artifact.
+
+    a. If `customTarget/helmNamespace` is defined then `--namespace=${customTarget/helmNamespace}` arg is used.

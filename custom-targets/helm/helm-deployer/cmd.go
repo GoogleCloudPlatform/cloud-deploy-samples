@@ -28,8 +28,14 @@ const (
 	gcloudBin = "gcloud"
 )
 
+// helmOptions configures the args provided to `helm`.
+type helmOptions struct {
+	namespace string
+}
+
 // helmTemplateOptions configures the args provided to `helm template`.
 type helmTemplateOptions struct {
+	helmOptions
 	lookup   bool
 	validate bool
 }
@@ -45,11 +51,15 @@ func helmTemplate(releaseName, chartPath string, opts *helmTemplateOptions) ([]b
 	if opts.validate {
 		args = append(args, "--validate")
 	}
+	if len(opts.helmOptions.namespace) > 0 {
+		args = append(args, fmt.Sprintf("--namespace=%s", opts.helmOptions.namespace))
+	}
 	return runCmd(helmBin, args, true)
 }
 
 // helmUpgradeOptions configures the args provided to `helm upgrade`.
 type helmUpgradeOptions struct {
+	helmOptions
 	timeout string
 }
 
@@ -60,20 +70,26 @@ func helmUpgrade(releaseName, chartPath string, opts *helmUpgradeOptions) ([]byt
 	if len(opts.timeout) != 0 {
 		args = append(args, fmt.Sprintf("--timeout=%s", opts.timeout))
 	}
+	if len(opts.helmOptions.namespace) > 0 {
+		args = append(args, fmt.Sprintf("--namespace=%s", opts.helmOptions.namespace))
+	}
 	return runCmd(helmBin, args, false)
 }
 
 // helmGetManifest runs `helm get manifest` for the provided release name. The output
 // from this command is not written to stdout.
-func helmGetManifest(releaseName string) ([]byte, error) {
+func helmGetManifest(releaseName string, opts *helmOptions) ([]byte, error) {
 	args := []string{"get", "manifest", releaseName}
+	if len(opts.namespace) > 0 {
+		args = append(args, fmt.Sprintf("--namespace=%s", opts.namespace))
+	}
 	return runCmd(helmBin, args, true)
 }
 
 // gkeClusterRegex represents the regex that a GKE cluster resource name needs to match.
 var gkeClusterRegex = regexp.MustCompile("^projects/([^/]+)/locations/([^/]+)/clusters/([^/]+)$")
 
-// gcloudClusterCredentials runs `gcloud container clusters get-crendetials` to set up
+// gcloudClusterCredentials runs `gcloud container clusters get-credentials` to set up
 // the cluster credentials.
 func gcloudClusterCredentials(gkeCluster string) ([]byte, error) {
 	m := gkeClusterRegex.FindStringSubmatch(gkeCluster)

@@ -104,7 +104,8 @@ func (r *renderer) render(ctx context.Context) (*clouddeploy.RenderResult, error
 	// Use the pipeline ID as the helm release since this should be consistent.
 	helmRelease := r.req.Pipeline
 	chartPath := determineChartPath(r.params)
-	templateOut, err := helmTemplate(helmRelease, chartPath, &helmTemplateOptions{lookup: r.params.templateLookup, validate: r.params.templateValidate})
+	hOpts := helmOptions{namespace: r.params.namespace}
+	templateOut, err := helmTemplate(helmRelease, chartPath, &helmTemplateOptions{helmOptions: hOpts, lookup: r.params.templateLookup, validate: r.params.templateValidate})
 	if err != nil {
 		return nil, fmt.Errorf("error running helm template: %v", err)
 	}
