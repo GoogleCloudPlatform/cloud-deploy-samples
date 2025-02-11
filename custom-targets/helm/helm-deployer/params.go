@@ -26,6 +26,7 @@ import (
 const (
 	gkeClusterEnvkey       = "CLOUD_DEPLOY_customTarget_helmGKECluster"
 	configPathEnvKey       = "CLOUD_DEPLOY_customTarget_helmConfigurationPath"
+	namespaceEnvKey        = "CLOUD_DEPLOY_customTarget_helmNamespace"
 	templateLookupEnvKey   = "CLOUD_DEPLOY_customTarget_helmTemplateLookup"
 	templateValidateEnvKey = "CLOUD_DEPLOY_customTarget_helmTemplateValidate"
 	upgradeTimeoutEnvKey   = "CLOUD_DEPLOY_customTarget_helmUpgradeTimeout"
@@ -38,6 +39,8 @@ type params struct {
 	// Path to the helm chart in the Cloud Deploy release archive. If not provided then
 	// defaults to "mychart" in the root directory of the archive.
 	configPath string
+	// Namespace scope of the request.
+	namespace string
 	// Whether to handle lookup functions when performing helm template for the informational
 	// release manifest, requires connecting to the cluster at render time.
 	templateLookup bool
@@ -78,6 +81,7 @@ func determineParams() (*params, error) {
 	return &params{
 		gkeCluster:       cluster,
 		configPath:       os.Getenv(configPathEnvKey),
+		namespace:        os.Getenv(namespaceEnvKey),
 		templateLookup:   templateLookup,
 		templateValidate: templateValidate,
 		upgradeTimeout:   os.Getenv(upgradeTimeoutEnvKey),

@@ -95,12 +95,13 @@ func (d *deployer) deploy(ctx context.Context) (*clouddeploy.DeployResult, error
 	// Use the pipeline ID as the helm release since this should be consistent.
 	helmRelease := d.req.Pipeline
 	chartPath := determineChartPath(d.params)
-	if _, err := helmUpgrade(helmRelease, chartPath, &helmUpgradeOptions{timeout: d.params.upgradeTimeout}); err != nil {
+	hOpts := helmOptions{namespace: d.params.namespace}
+	if _, err := helmUpgrade(helmRelease, chartPath, &helmUpgradeOptions{helmOptions: hOpts, timeout: d.params.upgradeTimeout}); err != nil {
 		return nil, fmt.Errorf("error running helm upgrade: %v", err)
 	}
 
 	// After `helm upgrade` succeeds get the manifest to upload as the deploy artifact.
-	manifest, err := helmGetManifest(helmRelease)
+	manifest, err := helmGetManifest(helmRelease, &helmOptions{namespace: d.params.namespace})
 	if err != nil {
 		return nil, fmt.Errorf("error running helm get manifest aft upgrade: %v", err)
 	}
