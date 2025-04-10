@@ -17,10 +17,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"google.golang.org/api/aiplatform/v1"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"sync"
 	"time"
+
+	"google.golang.org/api/aiplatform/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 const (
@@ -42,8 +43,7 @@ func poll(ctx context.Context, service *aiplatform.Service, op *aiplatform.Googl
 	}
 
 	pollFunc := getWaitFunc(opService, op.Name, ctx)
-
-	err = wait.PollUntilContextTimeout(ctx, lroOperationTimeout, pollingTimeout, true, pollFunc)
+	err = wait.PollImmediateWithContext(ctx, lroOperationTimeout, pollingTimeout, pollFunc)
 	if err != nil {
 		return err
 	}
