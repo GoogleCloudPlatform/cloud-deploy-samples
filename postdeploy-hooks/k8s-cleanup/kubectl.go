@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"slices"
 	"strings"
 
-	"github.com/go-ap/errors"
+	"google.golang.org/api/googleapi"
 )
 
 const (
@@ -158,9 +159,10 @@ func (ce CommandExecutor) deleteResources(resources []string) error {
 	for _, resource := range resources {
 		args := []string{"delete", resource, "--ignore-not-found=true"}
 		_, err := ce.execCommand(args)
-		// If the code retured is MethodNotAllowed log that and continue. This
+		// If the code returned is MethodNotAllowed log that and continue. This
 		// has popped up for example when trying to delete the podmetrics resource.
-		if errors.IsMethodNotAllowed(err) {
+		cmdErr, ok := err.(*googleapi.Error)
+		if ok && cmdErr.Code == http.StatusMethodNotAllowed {
 			fmt.Printf("Unable to delete resource: %s. Deleting that resource is not allowed.\n Continuing on to delete other resources.", resource)
 			continue
 		}
