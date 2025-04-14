@@ -20,8 +20,8 @@ To simplify the commands in this quickstart, set the following environment
 variables with your values:
 
 ```shell
-PROJECT_ID="YOUR_PROJECT_ID"
-REGION="YOUR_REGION"
+export PROJECT_ID="YOUR_PROJECT_ID"
+export REGION="YOUR_REGION"
 ```
 
 ## 3. Prerequisites
@@ -89,7 +89,7 @@ Finally, set the image's location in an environment variable for use in future
 steps, then build and push the image:
 
 ```shell
-IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/cd-k8s-cleanup/k8s-cleanup
+export IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/cd-k8s-cleanup/k8s-cleanup
 docker build --tag $IMAGE ..
 docker push $IMAGE
 ```
@@ -100,7 +100,7 @@ Create a GKE cluster for the quickstart. Use the following command to create the
 cluster and set the ID as an environment variable for a future step:
 
 ```shell
-CLUSTER_ID=quickstart-k8s-cleanup
+export CLUSTER_ID=quickstart-k8s-cleanup
 gcloud container clusters create-auto $CLUSTER_ID --project=$PROJECT_ID --region=$REGION
 ```
 

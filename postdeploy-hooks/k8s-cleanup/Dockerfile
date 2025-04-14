@@ -23,4 +23,4 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /cleanup-kubernetes-resources
 FROM  gcr.io/google.com/cloudsdktool/google-cloud-cli:${GCLOUD_VERSION}
 WORKDIR /
 COPY --from=build /cleanup-kubernetes-resources /cleanup-kubernetes-resources
-CMD ["/cleanup-kubernetes-resources"]
+ENTRYPOINT ["/cleanup-kubernetes-resources"]

@@ -2,12 +2,9 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"slices"
 	"strings"
-
-	"google.golang.org/api/googleapi"
 )
 
 const (
@@ -24,6 +21,9 @@ const (
 // resourcesToDelete returns a list of resources that are not in the current set of resources
 // (i.e. the set of resources that were just deployed by Cloud Deploy in the most recent release).
 func (ce CommandExecutor) resourcesToDelete(namespace, resourceTypeFlag string) ([]string, error) {
+
+	fmt.Printf("Value of resource-type command-line flag: %s", resourceTypeFlag)
+	fmt.Printf("Value of namespace command-line flag: %s", namespace)
 	// Step 1. Get a list of resource types to query.
 	resourceTypes, err := ce.resourceTypesToQuery(resourceTypeFlag)
 	if err != nil {
@@ -102,6 +102,7 @@ func (ce CommandExecutor) resourceTypesToQuery(resourceType string) ([]string, e
 		outputSplit := strings.Split(output, "\n")
 		// Delete the empty line at the end
 		resourceTypes = slices.DeleteFunc(outputSplit, isEmpty)
+		return resourceTypes, nil
 	}
 
 	// This will either be the user specified resource types or the default
@@ -161,8 +162,7 @@ func (ce CommandExecutor) deleteResources(resources []string) error {
 		_, err := ce.execCommand(args)
 		// If the code returned is MethodNotAllowed log that and continue. This
 		// has popped up for example when trying to delete the podmetrics resource.
-		cmdErr, ok := err.(*googleapi.Error)
-		if ok && cmdErr.Code == http.StatusMethodNotAllowed {
+		if strings.Contains(err.Error(), "MethodNotAllowed") {
 			fmt.Printf("Unable to delete resource: %s. Deleting that resource is not allowed.\n Continuing on to delete other resources.", resource)
 			continue
 		}
