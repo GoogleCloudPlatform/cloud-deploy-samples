@@ -21,9 +21,9 @@ const (
 // resourcesToDelete returns a list of resources that are not in the current set of resources
 // (i.e. the set of resources that were just deployed by Cloud Deploy in the most recent release).
 func (ce CommandExecutor) resourcesToDelete(namespace, resourceTypeFlag string) ([]string, error) {
-
-	fmt.Printf("Value of resource-type command-line flag: %s", resourceTypeFlag)
-	fmt.Printf("Value of namespace command-line flag: %s", namespace)
+	// Print the value of the command-line flags to aid debugging.
+	fmt.Printf("Value of resource-type command-line flag: %s\n", resourceTypeFlag)
+	fmt.Printf("Value of namespace command-line flag: %s \n", namespace)
 	// Step 1. Get a list of resource types to query.
 	resourceTypes, err := ce.resourceTypesToQuery(resourceTypeFlag)
 	if err != nil {
