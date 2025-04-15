@@ -35,6 +35,9 @@ const (
 
 func main() {
 	flag.Parse()
+	// Print the value of the command-line flags to aid debugging.
+	fmt.Printf("Value of resource-type command-line flag: %s\n", *resourceType)
+	fmt.Printf("Value of namespace command-line flag: %s \n", *namespace)
 
 	if err := do(); err != nil {
 		fmt.Printf("err: %v\n", err)
