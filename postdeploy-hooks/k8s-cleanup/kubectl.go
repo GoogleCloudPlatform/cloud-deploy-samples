@@ -5,8 +5,6 @@ import (
 	"os"
 	"slices"
 	"strings"
-
-	"github.com/go-ap/errors"
 )
 
 const (
@@ -101,6 +99,7 @@ func (ce CommandExecutor) resourceTypesToQuery(resourceType string) ([]string, e
 		outputSplit := strings.Split(output, "\n")
 		// Delete the empty line at the end
 		resourceTypes = slices.DeleteFunc(outputSplit, isEmpty)
+		return resourceTypes, nil
 	}
 
 	// This will either be the user specified resource types or the default
@@ -158,9 +157,9 @@ func (ce CommandExecutor) deleteResources(resources []string) error {
 	for _, resource := range resources {
 		args := []string{"delete", resource, "--ignore-not-found=true"}
 		_, err := ce.execCommand(args)
-		// If the code retured is MethodNotAllowed log that and continue. This
+		// If the code returned is MethodNotAllowed log that and continue. This
 		// has popped up for example when trying to delete the podmetrics resource.
-		if errors.IsMethodNotAllowed(err) {
+		if strings.Contains(err.Error(), "MethodNotAllowed") {
 			fmt.Printf("Unable to delete resource: %s. Deleting that resource is not allowed.\n Continuing on to delete other resources.", resource)
 			continue
 		}
