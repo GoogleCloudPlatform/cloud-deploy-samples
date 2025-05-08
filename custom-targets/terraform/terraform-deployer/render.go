@@ -27,8 +27,8 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
 	"github.com/hashicorp/hcl/v2"
-	"github.com/hashicorp/hcl/v2/hclsyntax"
-	"github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/hashicorp/hcl2/hclsyntax"
+	"github.com/hashicorp/hcl2/hclwrite"
 	"github.com/mholt/archiver/v3"
 	"github.com/zclconf/go-cty/cty"
 )

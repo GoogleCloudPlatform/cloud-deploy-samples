@@ -92,10 +92,10 @@ func (p *GitLabProvider) MergePullRequest(prNo int) (*MergeResponse, error) {
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", p.Token))
 
 		resp, err := http.DefaultClient.Do(req)
-		defer resp.Body.Close()
 		if err != nil {
 			return nil, fmt.Errorf("unable to make request: %v", err)
 		}
+		defer resp.Body.Close()
 		var mr gitLabMergeResponse
 		r, err := io.ReadAll(resp.Body)
 		if err != nil {

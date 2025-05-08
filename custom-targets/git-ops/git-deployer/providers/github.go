@@ -22,7 +22,7 @@ import (
 	"net/http"
 )
 
-// GithubProvider implements the GitProvider interface for interacting with the Github API.
+// GitHubProvider implements the GitProvider interface for interacting with the Github API.
 type GitHubProvider struct {
 	Repository string
 	Token      string
@@ -51,10 +51,10 @@ func (p *GitHubProvider) OpenPullRequest(src, dst, title, body string) (*PullReq
 	req.Header.Add("X-GitHub-Api-Version", "2022-11-28")
 
 	resp, err := http.DefaultClient.Do(req)
-	defer resp.Body.Close()
 	if err != nil {
 		return nil, fmt.Errorf("unable to make request: %v", err)
 	}
+	defer resp.Body.Close()
 	var pr PullRequest
 	r, err := io.ReadAll(resp.Body)
 	if err != nil {

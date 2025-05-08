@@ -1,25 +1,25 @@
 package main
 
 import (
-	"testing"
-	"google.golang.org/api/aiplatform/v1"
 	"github.com/google/go-cmp/cmp"
+	"google.golang.org/api/aiplatform/v1"
+	"testing"
 )
 
 // Tests that deployModelFromManifest fails when given an incorrect path. Does not test correct path or incomplete file!
-func TestDeployModelFromManifestFails(t *testing.T){
+func TestDeployModelFromManifestFails(t *testing.T) {
 	_, err := deployModelFromManifest("")
-	if err == nil{
+	if err == nil {
 		t.Errorf("Expected: error, Actual: %s", err)
 	}
 
 	_, err = deployModelFromManifest("testPath")
-	if err == nil{
+	if err == nil {
 		t.Errorf("Expected: error, Actual: %s", err)
 	}
 }
 
-//Tests that regionFromModel fails when give an empty string or an invalid model path
+// Tests that regionFromModel fails when give an empty string or an invalid model path
 func TestRegionFromModelFail(t *testing.T) {
 	_, err := regionFromModel("")
 	if err == nil {
@@ -55,8 +55,7 @@ func TestRegionFromModelPass(t *testing.T) {
 	}
 }
 
-
-//Tests that regionFromEndpoint fails when give an empty string or an invalid endpoint path
+// Tests that regionFromEndpoint fails when give an empty string or an invalid endpoint path
 func TestRegionFromEndpointFail(t *testing.T) {
 	_, err := regionFromEndpoint("")
 	if err == nil {
@@ -84,7 +83,7 @@ func TestRegionFromEndpointFail(t *testing.T) {
 	}
 }
 
-//Tests that the regionFromEndpoint successfully returns location from endpoint
+// Tests that the regionFromEndpoint successfully returns location from endpoint
 func TestRegionFromEndpointPass(t *testing.T) {
 	loc, err := regionFromEndpoint("projects/scortabarria-internship/locations/test-location/endpoints/test-endpoint")
 	if diff := cmp.Diff(loc, "test-location"); diff != "" || err != nil {
@@ -93,18 +92,18 @@ func TestRegionFromEndpointPass(t *testing.T) {
 
 }
 
-//Tests that minReplicaCoundFromConfig returns 0 when no minReplicaCount is specified in the configuration
-//file. If it is specified, it returns that value
+// Tests that minReplicaCoundFromConfig returns 0 when no minReplicaCount is specified in the configuration
+// file. If it is specified, it returns that value
 func TestMinReplicaCountFromConfig(t *testing.T) {
 	deployedModel := &aiplatform.GoogleCloudAiplatformV1DeployedModel{}
-	if num := minReplicaCountFromConfig(deployedModel); num != 0{
+	if num := minReplicaCountFromConfig(deployedModel); num != 0 {
 		t.Errorf("Error: num was expected to be 0, Actual: %v", num)
 	}
 
 	deployedModel.DedicatedResources = &aiplatform.GoogleCloudAiplatformV1DedicatedResources{
 		MinReplicaCount: 5,
 	}
-	if num := minReplicaCountFromConfig(deployedModel); num != 5{
+	if num := minReplicaCountFromConfig(deployedModel); num != 5 {
 		t.Errorf("Error: num was expected to be 5, Actual %v", num)
 	}
 }

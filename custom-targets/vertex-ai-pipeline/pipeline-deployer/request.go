@@ -42,7 +42,7 @@ type requestHandler interface {
 }
 
 // createRequestHandler creates a requestHandler for the provided Cloud Deploy request.
-func createRequestHandler(cloudDeployRequest interface{}, params *params, gcsClient *storage.Client, service *aiplatform.Service) (requestHandler, error) {
+func createRequestHandler(cloudDeployRequest any, params *params, gcsClient *storage.Client, service *aiplatform.Service) (requestHandler, error) {
 	switch r := cloudDeployRequest.(type) {
 	case *clouddeploy.RenderRequest:
 		return &renderer{

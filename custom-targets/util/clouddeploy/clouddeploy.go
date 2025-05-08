@@ -383,7 +383,7 @@ func DetermineRequest(ctx context.Context, gcsClient *storage.Client, supportedF
 				if err != nil {
 					return nil, fmt.Errorf("error uploading deploy feature not supported results: %v", err)
 				}
-				return nil, fmt.Errorf(msg)
+				return nil, errors.New(msg)
 			}
 		}
 

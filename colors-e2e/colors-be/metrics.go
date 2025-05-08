@@ -23,7 +23,7 @@ type ServiceMetadata struct {
 	podNamespace    string
 	clusterName     string
 	clusterLocation string
-	projectId       string
+	projectID       string
 	releaseId       string
 	deploymentName  string
 }
@@ -68,7 +68,7 @@ func GetSerivceMetadata() (*ServiceMetadata, error) {
 		podNamespace:    podNamespace,
 		clusterName:     clusterName,
 		clusterLocation: clusterLocation,
-		projectId:       projectId,
+		projectID:       projectId,
 		releaseId:       releaseId,
 		deploymentName:  deploymentName,
 	}, nil
@@ -123,7 +123,7 @@ func (l *RequestLogger) SendMetrics() {
 	badCount = atomic.SwapInt64(&l.badRequests, badCount)
 	goodCount = atomic.SwapInt64(&l.goodRequests, goodCount)
 	request := &monitoringpb.CreateTimeSeriesRequest{
-		Name: fmt.Sprintf("projects/%s", l.serviceMetadata.projectId),
+		Name: fmt.Sprintf("projects/%s", l.serviceMetadata.projectID),
 		TimeSeries: []*monitoringpb.TimeSeries{
 			l.MakeTimeSeriesWithDataPoint("2xx", goodCount),
 			l.MakeTimeSeriesWithDataPoint("5xx", badCount),
@@ -169,7 +169,7 @@ func (l *RequestLogger) MakeTimeSeriesWithDataPoint(responseCodeClass string, me
 		Resource: &monitoredrespb.MonitoredResource{
 			Type: "k8s_pod",
 			Labels: map[string]string{
-				"project_id":     l.serviceMetadata.projectId,
+				"project_id":     l.serviceMetadata.projectID,
 				"location":       l.serviceMetadata.clusterLocation,
 				"cluster_name":   l.serviceMetadata.clusterName,
 				"pod_name":       l.serviceMetadata.podName,

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package main implements a Cloud Deploy Custom Target for deploying to a Git repository.
 package main
 
 import (
@@ -66,7 +67,7 @@ type requestHandler interface {
 }
 
 // createRequestHandler creates a requestHandler for the provided Cloud Deploy request.
-func createRequestHandler(ctx context.Context, cloudDeployRequest interface{}, params *params, gcsClient *storage.Client) (requestHandler, error) {
+func createRequestHandler(ctx context.Context, cloudDeployRequest any, params *params, gcsClient *storage.Client) (requestHandler, error) {
 	// The git deployer only supports deploy. If a render request is received then a not supported result will be
 	// uploaded to Cloud Storage in order to provide Cloud Deploy with context on why the render failed.
 	switch r := cloudDeployRequest.(type) {
