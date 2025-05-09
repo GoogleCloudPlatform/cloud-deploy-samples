@@ -120,8 +120,11 @@ type RenderResult struct {
 type RenderStatus string
 
 const (
-	RenderSucceeded    RenderStatus = "SUCCEEDED"
-	RenderFailed       RenderStatus = "FAILED"
+	// RenderSucceeded is the render succeeded status.
+	RenderSucceeded RenderStatus = "SUCCEEDED"
+	// RenderFailed is the render failed status.
+	RenderFailed RenderStatus = "FAILED"
+	// RenderNotSupported is the render not supported status.
 	RenderNotSupported RenderStatus = "NOT_SUPPORTED"
 )
 
@@ -231,9 +234,13 @@ type DeployResult struct {
 type DeployStatus string
 
 const (
-	DeploySucceeded    DeployStatus = "SUCCEEDED"
-	DeployFailed       DeployStatus = "FAILED"
-	DeploySkipped      DeployStatus = "SKIPPED"
+	// DeploySucceeded is the deploy succeeded status.
+	DeploySucceeded DeployStatus = "SUCCEEDED"
+	// DeployFailed is the deploy failed status.
+	DeployFailed DeployStatus = "FAILED"
+	// DeploySkipped is the deploy skipped status.
+	DeploySkipped DeployStatus = "SKIPPED"
+	// DeployNotSupported is the deploy not supported status.
 	DeployNotSupported DeployStatus = "NOT_SUPPORTED"
 )
 
@@ -292,7 +299,7 @@ func (d *DeployRequest) UploadResult(ctx context.Context, gcsClient *storage.Cli
 // execution environment and returns either a RenderRequest or DeployRequest. If the request
 // includes a feature that is not in provided supported features list then a NOT_SUPPORTED result
 // is uploaded for Cloud Deploy and an error is returned.
-func DetermineRequest(ctx context.Context, gcsClient *storage.Client, supportedFeatures []string) (interface{}, error) {
+func DetermineRequest(ctx context.Context, gcsClient *storage.Client, supportedFeatures []string) (any, error) {
 	// Values present for render and deploy.
 	project := os.Getenv(ProjectEnvKey)
 	location := os.Getenv(LocationEnvKey)
@@ -349,7 +356,7 @@ func DetermineRequest(ctx context.Context, gcsClient *storage.Client, supportedF
 				if err != nil {
 					return nil, fmt.Errorf("error uploading render feature not supported results: %v", err)
 				}
-				return nil, fmt.Errorf(msg)
+				return nil, errors.New(msg)
 			}
 		}
 		return rr, nil
@@ -423,7 +430,6 @@ func downloadGCS(ctx context.Context, gcsClient *storage.Client, gcsURI, localPa
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
 
 	if _, err := io.Copy(file, r); err != nil {
 		return nil, err

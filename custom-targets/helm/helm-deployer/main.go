@@ -31,7 +31,7 @@ const (
 
 func main() {
 	if err := do(); err != nil {
-		fmt.Printf("err: %v\n", err)
+		fmt.Fprintf(os.Stderr, "err: %v\n", err)
 		os.Exit(1)
 	}
 	fmt.Println("Done!")
@@ -65,7 +65,7 @@ type requestHandler interface {
 }
 
 // createRequestHandler creates a requestHandler for the provided Cloud Deploy request.
-func createRequestHandler(ctx context.Context, cloudDeployRequest interface{}, params *params, gcsClient *storage.Client) (requestHandler, error) {
+func createRequestHandler(ctx context.Context, cloudDeployRequest any, params *params, gcsClient *storage.Client) (requestHandler, error) {
 	switch r := cloudDeployRequest.(type) {
 	case *clouddeploy.RenderRequest:
 		return &renderer{

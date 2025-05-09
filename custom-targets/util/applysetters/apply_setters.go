@@ -31,6 +31,7 @@ import (
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
+// SetterCommentIdentifier tells Cloud Deploy that a deploy-parameters placeholder follows.
 const SetterCommentIdentifier = "# from-param: "
 
 var _ kio.Filter = &ApplySetters{}
@@ -48,6 +49,7 @@ type ApplySetters struct {
 	filePath string
 }
 
+// Setter represents a deploy parameter.
 type Setter struct {
 	// Name is the name of the setter
 	Name string

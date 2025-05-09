@@ -1,3 +1,5 @@
+// Package main implements a container that can be used to clean up Kubernetes resources that were
+// deployed by Cloud Deploy.
 package main
 
 import (
