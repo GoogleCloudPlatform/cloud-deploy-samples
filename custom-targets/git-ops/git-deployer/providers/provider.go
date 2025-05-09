@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // Package providers interacts with the API of a Git provider.
-package provider
+package providers
 
 import (
 	"fmt"
