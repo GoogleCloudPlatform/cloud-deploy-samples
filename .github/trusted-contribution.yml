@@ -1,0 +1,7 @@
+trustedContributors:
+  - "dependabot[bot]"
+  - "cloud-deploy-samples-bot[bot]"
+annotations:
+  # Trigger Cloud Build tests
+  - type: comment
+    text: "/gcbrun"
