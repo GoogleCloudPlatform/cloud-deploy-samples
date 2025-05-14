@@ -1,6 +1,6 @@
 module github.com/GoogleCloudPlatform/cloud-deploy-samples/verify-evaluate-cloud-metrics
 
-go 1.20
+go 1.23
 
 require (
 	cloud.google.com/go/monitoring v1.15.1

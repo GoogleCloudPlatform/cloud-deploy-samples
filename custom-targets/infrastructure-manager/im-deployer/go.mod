@@ -14,7 +14,7 @@
 
 module github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/infrastructure-manager/im-deployer
 
-go 1.21.0
+go 1.23.0
 
 require (
 	cloud.google.com/go/config v0.1.4
