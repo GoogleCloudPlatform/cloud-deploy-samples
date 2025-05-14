@@ -14,7 +14,7 @@
 
 module github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/vertex-ai/model-deployer
 
-go 1.21.0
+go 1.23.0
 
 require (
 	cloud.google.com/go/storage v1.35.1

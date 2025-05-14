@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG GO_VERSION=1.21
+ARG GO_VERSION=1.23
 ARG TERRAFORM_VERSION=1.2.3
 
 FROM golang:${GO_VERSION} AS go-build

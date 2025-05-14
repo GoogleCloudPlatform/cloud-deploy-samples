@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.20 AS build
+FROM golang:1.23 AS build
 WORKDIR /verify
 COPY go.mod go.sum main.go ./
 RUN go mod download

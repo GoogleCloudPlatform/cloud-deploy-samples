@@ -13,7 +13,7 @@
 # limitations under the License.
 
 ARG GCLOUD_VERSION=456.0.0
-ARG GO_VERSION=1.21
+ARG GO_VERSION=1.23
 
 FROM golang:${GO_VERSION} AS go-build
 ARG COMMIT_SHA=unknown

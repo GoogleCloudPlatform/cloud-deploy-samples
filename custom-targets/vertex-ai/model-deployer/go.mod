@@ -14,11 +14,12 @@
 
 module github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/vertex-ai/model-deployer
 
-go 1.21.0
+go 1.23.0
 
 require (
 	cloud.google.com/go/storage v1.35.1
 	github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util v0.0.0-20231208185506-3b5ad45cc0fc
+	github.com/google/go-cmp v0.6.0
 	google.golang.org/api v0.150.0
 	k8s.io/apimachinery v0.28.4
 	sigs.k8s.io/yaml v1.3.0
@@ -41,7 +42,6 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/google/uuid v1.4.0 // indirect
