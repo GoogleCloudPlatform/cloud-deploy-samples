@@ -22,9 +22,9 @@ import (
 
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/aiplatform/v1"
+	"google3/third_party/golang/kubeyaml/yaml"
 	"os"
 	"regexp"
-	"sigs.k8s.io/yaml"
 )
 
 const (

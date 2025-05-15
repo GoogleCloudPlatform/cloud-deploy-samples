@@ -18,9 +18,9 @@ import (
 	"context"
 	"fmt"
 	"google.golang.org/api/aiplatform/v1"
-	"google.golang.org/api/option"
+	"google3/third_party/golang/google_api/option/option"
+	"google3/third_party/golang/kubeyaml/yaml"
 	"os"
-	"sigs.k8s.io/yaml"
 	"strings"
 )
 
