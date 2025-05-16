@@ -12,10 +12,10 @@ import (
 	"cloud.google.com/go/compute/metadata"
 	monitoring "cloud.google.com/go/monitoring/apiv3/v2"
 	"cloud.google.com/go/monitoring/apiv3/v2/monitoringpb"
-	"github.com/golang/protobuf/proto"
 	googlepb "github.com/golang/protobuf/ptypes/timestamp"
 	metricpb "google.golang.org/genproto/googleapis/api/metric"
 	monitoredrespb "google.golang.org/genproto/googleapis/api/monitoredres"
+	"google.golang.org/protobuf/proto"
 )
 
 type ServiceMetadata struct {
@@ -131,7 +131,9 @@ func (l *RequestLogger) SendMetrics() {
 
 	if err := l.client.CreateTimeSeries(l.ctx, request); err != nil {
 		log.Printf("Failed to write time series data: %v\n", err)
-		log.Printf("Request message: %v\n", proto.MarshalTextString(request))
+		reqBytes, _ := proto.Marshal(request)
+
+		log.Printf("Request message: %v\n", reqBytes)
 	}
 }
 
