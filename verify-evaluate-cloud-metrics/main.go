@@ -25,7 +25,7 @@ import (
 
 	monitoring "cloud.google.com/go/monitoring/apiv3/v2"
 	"cloud.google.com/go/monitoring/apiv3/v2/monitoringpb"
-	"google.golang.org/api/iterator"
+	"google3/third_party/golang/google_api/iterator/iterator"
 )
 
 var (

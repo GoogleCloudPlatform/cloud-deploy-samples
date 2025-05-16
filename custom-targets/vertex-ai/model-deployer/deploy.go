@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
 	"google.golang.org/api/aiplatform/v1"
-	"sigs.k8s.io/yaml"
+	"google3/third_party/golang/kubeyaml/yaml"
 
 	"cloud.google.com/go/storage"
 )

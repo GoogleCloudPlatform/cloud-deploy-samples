@@ -20,8 +20,8 @@ import (
 	"os"
 
 	"google.golang.org/api/aiplatform/v1"
-	"google.golang.org/api/option"
-	"sigs.k8s.io/yaml"
+	"google3/third_party/golang/google_api/option/option"
+	"google3/third_party/golang/kubeyaml/yaml"
 )
 
 // pipelineRequestFromManifest loads the file provided in `path` and returns the parsed CreatePipelineJobRequest
