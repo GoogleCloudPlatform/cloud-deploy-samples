@@ -14,7 +14,7 @@
 
 module github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/git-ops/git-deployer
 
-go 1.21.0
+go 1.24.0
 
 require (
 	cloud.google.com/go/secretmanager v1.11.4

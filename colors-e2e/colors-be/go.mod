@@ -1,6 +1,6 @@
 module color-backend
 
-go 1.21
+go 1.24
 
 require (
 	cloud.google.com/go/compute/metadata v0.2.3
