@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hash/crc32"
 	"io"
 	"os"
 	"path/filepath"
@@ -26,10 +25,10 @@ import (
 	"time"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
-	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
 	"cloud.google.com/go/storage"
 	provider "github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/git-ops/git-deployer/providers"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/secrets"
 )
 
 const (
@@ -91,13 +90,10 @@ func (d *deployer) process(ctx context.Context) error {
 //     b. If Argo sync polling is enabled then merge the pull request and poll the Argo application
 //     until the status is Synced.
 func (d *deployer) deploy(ctx context.Context) (*clouddeploy.DeployResult, error) {
-	fmt.Printf("Accessing SecretVersion %s\n", d.params.gitSecret)
-	s, err := d.accessSecretVersion(ctx, d.params.gitSecret)
+	secret, err := secrets.SecretVersionData(ctx, d.params.gitSecret, d.smClient)
 	if err != nil {
 		return nil, fmt.Errorf("unable to access git secret: %v", err)
 	}
-	fmt.Printf("Accessed SecretVersion %s\n", d.params.gitSecret)
-	secret := string(s)
 
 	repoParts := strings.Split(d.params.gitRepo, "/")
 	if len(repoParts) != 3 {
@@ -153,24 +149,6 @@ func (d *deployer) deploy(ctx context.Context) (*clouddeploy.DeployResult, error
 			clouddeploy.CustomTargetSourceSHAMetadataKey: clouddeploy.GitCommit,
 		},
 	}, nil
-}
-
-// accessSecretVersion downloads the Secret Manager SecretVersion, verifies the data checksum and
-// provides the data payload.
-func (d *deployer) accessSecretVersion(ctx context.Context, svName string) ([]byte, error) {
-	res, err := d.smClient.AccessSecretVersion(ctx, &secretmanagerpb.AccessSecretVersionRequest{
-		Name: svName,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to access secret version %s: %v", svName, err)
-	}
-
-	crc32c := crc32.MakeTable(crc32.Castagnoli)
-	checksum := int64(crc32.Checksum(res.Payload.Data, crc32c))
-	if checksum != *res.Payload.DataCrc32C {
-		return nil, fmt.Errorf("data corruption detected with secret version")
-	}
-	return res.Payload.Data, nil
 }
 
 // setupGitWorkspace clones the Git repository and checks out the configured source branch.
