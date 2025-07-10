@@ -17,9 +17,24 @@ ARG GO_VERSION=1.24
 FROM golang:${GO_VERSION} AS go-build
 ARG COMMIT_SHA=unknown
 WORKDIR /app
-COPY go.mod go.sum ./
-COPY *.go ./
+
+# Copy the model-deployer module's go.mod and go.sum
+COPY custom-targets/vertex-ai/model-deployer/go.mod ./custom-targets/vertex-ai/model-deployer/
+COPY custom-targets/vertex-ai/model-deployer/go.sum ./custom-targets/vertex-ai/model-deployer/
+COPY custom-targets/vertex-ai/model-deployer/*.go ./custom-targets/vertex-ai/model-deployer/
+# Copy the util module's go.mod and go.sum
+COPY custom-targets/util/go.mod ./custom-targets/util/
+COPY custom-targets/util/go.sum ./custom-targets/util/
+COPY custom-targets/util/** ./custom-targets/util/
+RUN ls -R
+# Change to the model-deployer module directory to run go mod download
+# The replace directive in model-deployer's go.mod points to ../../util
+# Relative to /app/custom-targets/vertex-ai/model-deployer, this means /app/custom-targets/util
+WORKDIR /app/custom-targets/vertex-ai/model-deployer
+RUN go mod tidy
+# Download dependencies (including the replaced local util module)
 RUN go mod download
+
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy.GitCommit=${COMMIT_SHA}" -o /vertex-ai-deployer
 
 FROM gcr.io/distroless/static-debian12:latest AS release

@@ -26,6 +26,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/gcs"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
@@ -163,7 +164,7 @@ func (r *renderer) render(ctx context.Context) (*clouddeploy.RenderResult, error
 		return nil, fmt.Errorf("error creating cloud deploy release inspector artifact: %v", err)
 	}
 	fmt.Println("Uploading Cloud Deploy Release inspector artifact")
-	planGCSURI, err := r.req.UploadArtifact(ctx, r.gcsClient, inspectorArtifactName, &clouddeploy.GCSUploadContent{LocalPath: inspectorArtifactPath})
+	planGCSURI, err := r.req.UploadArtifact(ctx, r.gcsClient, inspectorArtifactName, &gcs.UploadContent{LocalPath: inspectorArtifactPath})
 	if err != nil {
 		return nil, fmt.Errorf("error uploading speculative plan: %v", err)
 	}
@@ -181,7 +182,7 @@ func (r *renderer) render(ctx context.Context) (*clouddeploy.RenderResult, error
 		return nil, fmt.Errorf("error archiving terraform configuration: %v", err)
 	}
 	fmt.Println("Uploading archived Terraform configuration")
-	atURI, err := r.req.UploadArtifact(ctx, r.gcsClient, renderedArchiveName, &clouddeploy.GCSUploadContent{LocalPath: renderedArchiveName})
+	atURI, err := r.req.UploadArtifact(ctx, r.gcsClient, renderedArchiveName, &gcs.UploadContent{LocalPath: renderedArchiveName})
 	if err != nil {
 		return nil, fmt.Errorf("error uploading archived terraform configuration: %v", err)
 	}
