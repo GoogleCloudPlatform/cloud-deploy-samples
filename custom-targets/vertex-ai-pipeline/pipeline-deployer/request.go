@@ -22,6 +22,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/cdenv"
 	"google.golang.org/api/aiplatform/v1"
 )
 
@@ -61,7 +62,7 @@ func createRequestHandler(cloudDeployRequest any, params *params, gcsClient *sto
 		}, nil
 
 	default:
-		return nil, fmt.Errorf("received unsupported cloud deploy request type: %q", os.Getenv(clouddeploy.RequestTypeEnvKey))
+		return nil, fmt.Errorf("received unsupported cloud deploy request type: %q", os.Getenv(cdenv.RequestTypeEnvKey))
 	}
 }
 

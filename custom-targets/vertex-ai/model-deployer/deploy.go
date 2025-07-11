@@ -18,11 +18,13 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
 	"google.golang.org/api/aiplatform/v1"
 	"sigs.k8s.io/yaml"
 
 	"cloud.google.com/go/storage"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/gcs"
 )
 
 const aiDeployerSampleName = "clouddeploy-vertex-ai-sample"
@@ -81,7 +83,7 @@ func (d *deployer) deploy(ctx context.Context) (*clouddeploy.DeployResult, error
 		return nil, fmt.Errorf("failed to deploy model: %v", err)
 	}
 
-	mURI, err := d.req.UploadArtifact(ctx, d.gcsClient, "manifest.yaml", &clouddeploy.GCSUploadContent{Data: manifestData})
+	mURI, err := d.req.UploadArtifact(ctx, d.gcsClient, "manifest.yaml", &gcs.UploadContent{Data: manifestData})
 	if err != nil {
 		return nil, fmt.Errorf("error uploading deploy artifact: %v", err)
 	}
