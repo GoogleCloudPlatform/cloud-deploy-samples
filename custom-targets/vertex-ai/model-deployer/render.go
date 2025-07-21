@@ -17,13 +17,16 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/applysetters"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/gcs"
+
+	"os"
+	"regexp"
 
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/aiplatform/v1"
-	"os"
-	"regexp"
 	"sigs.k8s.io/yaml"
 )
 
@@ -95,7 +98,7 @@ func (r *renderer) render(ctx context.Context) (*clouddeploy.RenderResult, error
 
 	fmt.Printf("Uploading deployed model manifest.\n")
 
-	mURI, err := r.req.UploadArtifact(ctx, r.gcsClient, "manifest.yaml", &clouddeploy.GCSUploadContent{Data: out})
+	mURI, err := r.req.UploadArtifact(ctx, r.gcsClient, "manifest.yaml", &gcs.UploadContent{Data: out})
 	if err != nil {
 		return nil, fmt.Errorf("error uploading deployed model manifest: %v", err)
 	}

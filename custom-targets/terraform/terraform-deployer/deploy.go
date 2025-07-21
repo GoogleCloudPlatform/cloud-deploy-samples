@@ -23,6 +23,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/gcs"
 	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/mholt/archiver/v3"
 )
@@ -113,7 +114,7 @@ func (d *deployer) deploy(ctx context.Context) (*clouddeploy.DeployResult, error
 		return nil, fmt.Errorf("error extracting terraform outputs from the terraform state: %v", err)
 	}
 	fmt.Println("Uploading Terraform state as a deploy artifact")
-	stateGCSURI, err := d.req.UploadArtifact(ctx, d.gcsClient, "deployed-state.json", &clouddeploy.GCSUploadContent{Data: ts})
+	stateGCSURI, err := d.req.UploadArtifact(ctx, d.gcsClient, "deployed-state.json", &gcs.UploadContent{Data: ts})
 	if err != nil {
 		return nil, fmt.Errorf("error uploading terraform state deploy artifact: %v", err)
 	}

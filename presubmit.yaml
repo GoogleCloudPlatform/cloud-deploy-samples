@@ -4,7 +4,8 @@ steps:
     script: |
       set -e
       # Find all directories that container a file named `Dockerfile`
-      for dir in $(find . -type d -exec test -e '{}'/Dockerfile \; -print); do
+      for dir in $(find ./custom-targets/vertex-ai -type d -exec test -e '{}'/Dockerfile \; -print); do
         echo "BUILDING $dir"
-        docker build $dir
+        pwd
+        docker build . -f "$dir/Dockerfile"
       done
