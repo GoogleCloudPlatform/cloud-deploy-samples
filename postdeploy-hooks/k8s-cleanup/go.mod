@@ -1,9 +1,10 @@
 module cleanup
 
-go 1.24
+go 1.24.4
 
 require (
 	cloud.google.com/go/storage v1.48.0
+	github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/cdenv v0.0.0-20250721143256-d108f2df4f09
 	github.com/google/go-cmp v0.6.0
 )
 

@@ -14,12 +14,13 @@
 
 module github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/git-ops/git-deployer
 
-go 1.24.0
+go 1.24.4
 
 require (
 	cloud.google.com/go/secretmanager v1.15.0
 	cloud.google.com/go/storage v1.50.0
 	github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util v0.0.0-20231208154754-dafec52e77a0
+	github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/cdenv v0.0.0-20250721143256-d108f2df4f09
 	github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/secrets v0.0.0-20250709122056-37571ed5ce9a
 )
 

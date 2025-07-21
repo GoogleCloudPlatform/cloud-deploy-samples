@@ -29,33 +29,12 @@ import (
 	"strings"
 
 	"cloud.google.com/go/storage"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/cdenv"
 	"github.com/mholt/archiver/v3"
 )
 
 // GitCommit SHA to be set during build time of the binary.
 var GitCommit = "unknown"
-
-// Cloud Deploy environment variable keys.
-const (
-	RequestTypeEnvKey        = "CLOUD_DEPLOY_REQUEST_TYPE"
-	FeaturesEnvKey           = "CLOUD_DEPLOY_FEATURES"
-	ProjectEnvKey            = "CLOUD_DEPLOY_PROJECT"
-	LocationEnvKey           = "CLOUD_DEPLOY_LOCATION"
-	PipelineEnvKey           = "CLOUD_DEPLOY_DELIVERY_PIPELINE"
-	ReleaseEnvKey            = "CLOUD_DEPLOY_RELEASE"
-	RolloutEnvKey            = "CLOUD_DEPLOY_ROLLOUT"
-	TargetEnvKey             = "CLOUD_DEPLOY_TARGET"
-	PhaseEnvKey              = "CLOUD_DEPLOY_PHASE"
-	PercentageEnvKey         = "CLOUD_DEPLOY_PERCENTAGE_DEPLOY"
-	StorageTypeEnvKey        = "CLOUD_DEPLOY_STORAGE_TYPE"
-	InputGCSEnvKey           = "CLOUD_DEPLOY_INPUT_GCS_PATH"
-	OutputGCSEnvKey          = "CLOUD_DEPLOY_OUTPUT_GCS_PATH"
-	SkaffoldGCSEnvKey        = "CLOUD_DEPLOY_SKAFFOLD_GCS_PATH"
-	ManifestGCSEnvKey        = "CLOUD_DEPLOY_MANIFEST_GCS_PATH"
-	WorkloadTypeEnvKey       = "CLOUD_DEPLOY_WORKLOAD_TYPE"
-	CloudBuildServiceAccount = "CLOUD_DEPLOY_WP_CB_ServiceAccount"
-	CloudBuildWorkerPool     = "CLOUD_DEPLOY_WP_CB_WorkerPool"
-)
 
 const (
 	// The Cloud Storage object suffix for the expected results file.
@@ -301,34 +280,34 @@ func (d *DeployRequest) UploadResult(ctx context.Context, gcsClient *storage.Cli
 // is uploaded for Cloud Deploy and an error is returned.
 func DetermineRequest(ctx context.Context, gcsClient *storage.Client, supportedFeatures []string) (any, error) {
 	// Values present for render and deploy.
-	project := os.Getenv(ProjectEnvKey)
-	location := os.Getenv(LocationEnvKey)
-	pipeline := os.Getenv(PipelineEnvKey)
-	release := os.Getenv(ReleaseEnvKey)
-	target := os.Getenv(TargetEnvKey)
-	phase := os.Getenv(PhaseEnvKey)
-	percentage, err := strconv.Atoi(os.Getenv(PercentageEnvKey))
+	project := os.Getenv(cdenv.ProjectEnvKey)
+	location := os.Getenv(cdenv.LocationEnvKey)
+	pipeline := os.Getenv(cdenv.PipelineEnvKey)
+	release := os.Getenv(cdenv.ReleaseEnvKey)
+	target := os.Getenv(cdenv.TargetEnvKey)
+	phase := os.Getenv(cdenv.PhaseEnvKey)
+	percentage, err := strconv.Atoi(os.Getenv(cdenv.PercentageEnvKey))
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse %q", PercentageEnvKey)
+		return nil, fmt.Errorf("failed to parse %q", cdenv.PercentageEnvKey)
 	}
-	storageType := os.Getenv(StorageTypeEnvKey)
-	inputGCSPath := os.Getenv(InputGCSEnvKey)
-	outputGCSPath := os.Getenv(OutputGCSEnvKey)
+	storageType := os.Getenv(cdenv.StorageTypeEnvKey)
+	inputGCSPath := os.Getenv(cdenv.InputGCSEnvKey)
+	outputGCSPath := os.Getenv(cdenv.OutputGCSEnvKey)
 
-	workloadType := os.Getenv(WorkloadTypeEnvKey)
+	workloadType := os.Getenv(cdenv.WorkloadTypeEnvKey)
 	var cbWorkload CloudBuildWorkload
 	if workloadType == "CB" {
 		cbWorkload = CloudBuildWorkload{
-			ServiceAccount: os.Getenv(CloudBuildServiceAccount),
-			WorkerPool:     os.Getenv(CloudBuildWorkerPool),
+			ServiceAccount: os.Getenv(cdenv.CloudBuildServiceAccount),
+			WorkerPool:     os.Getenv(cdenv.CloudBuildWorkerPool),
 		}
 	}
 
-	features := strings.FieldsFunc(os.Getenv(FeaturesEnvKey), func(c rune) bool {
+	features := strings.FieldsFunc(os.Getenv(cdenv.FeaturesEnvKey), func(c rune) bool {
 		return c == ','
 	})
 
-	reqType := os.Getenv(RequestTypeEnvKey)
+	reqType := os.Getenv(cdenv.RequestTypeEnvKey)
 	switch reqType {
 	case "RENDER":
 		rr := &RenderRequest{
@@ -367,14 +346,14 @@ func DetermineRequest(ctx context.Context, gcsClient *storage.Client, supportedF
 			Location:        location,
 			Pipeline:        pipeline,
 			Release:         release,
-			Rollout:         os.Getenv(RolloutEnvKey),
+			Rollout:         os.Getenv(cdenv.RolloutEnvKey),
 			Target:          target,
 			Phase:           phase,
 			Percentage:      percentage,
 			StorageType:     storageType,
 			InputGCSPath:    inputGCSPath,
-			SkaffoldGCSPath: os.Getenv(SkaffoldGCSEnvKey),
-			ManifestGCSPath: os.Getenv(ManifestGCSEnvKey),
+			SkaffoldGCSPath: os.Getenv(cdenv.SkaffoldGCSEnvKey),
+			ManifestGCSPath: os.Getenv(cdenv.ManifestGCSEnvKey),
 			OutputGCSPath:   outputGCSPath,
 			WorkloadType:    workloadType,
 			WorkloadCBInfo:  cbWorkload,

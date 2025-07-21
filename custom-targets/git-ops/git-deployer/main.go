@@ -23,6 +23,7 @@ import (
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/cdenv"
 )
 
 const (
@@ -102,6 +103,6 @@ func createRequestHandler(ctx context.Context, cloudDeployRequest any, params *p
 		}, nil
 
 	default:
-		return nil, fmt.Errorf("received unsupported cloud deploy request type: %q", os.Getenv(clouddeploy.RequestTypeEnvKey))
+		return nil, fmt.Errorf("received unsupported cloud deploy request type: %q", os.Getenv(cdenv.RequestTypeEnvKey))
 	}
 }

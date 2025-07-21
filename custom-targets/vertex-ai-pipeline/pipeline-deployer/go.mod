@@ -14,11 +14,12 @@
 
 module github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/vertex-ai/model-deployer
 
-go 1.24.0
+go 1.24.4
 
 require (
 	cloud.google.com/go/storage v1.35.1
 	github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util v0.0.0-20231208185506-3b5ad45cc0fc
+	github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/cdenv v0.0.0-20250721143256-d108f2df4f09
 	google.golang.org/api v0.150.0
 	sigs.k8s.io/yaml v1.3.0
 )

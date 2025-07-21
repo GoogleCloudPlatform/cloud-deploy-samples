@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"cloud.google.com/go/storage"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/cdenv"
 )
 
 // postdeployHookResult represents the json data in the results file for a
@@ -20,9 +21,8 @@ type postdeployHookResult struct {
 
 // uploadResult uploads the provided deploy result to the Cloud Storage path where Cloud Deploy expects it.
 func uploadResult(ctx context.Context, gcsClient *storage.Client, deployHookResult *postdeployHookResult) error {
-	// This environment variable is provided by Cloud Deploy and the value is
-	// where to upload a results file.
-	uri := os.Getenv("CLOUD_DEPLOY_OUTPUT_GCS_PATH")
+	// Get the GCS URI where the results file should be uploaded.
+	uri := os.Getenv(cdenv.OutputGCSEnvKey)
 	jsonResult, err := json.Marshal(deployHookResult)
 	if err != nil {
 		return fmt.Errorf("error marshalling postdeploy hook result: %v", err)

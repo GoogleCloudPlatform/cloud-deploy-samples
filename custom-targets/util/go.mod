@@ -13,10 +13,11 @@
 // limitations under the License.
 module github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util
 
-go 1.24.0
+go 1.24.4
 
 require (
 	cloud.google.com/go/storage v1.35.1
+	github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/cdenv v0.0.0-20250721143256-d108f2df4f09
 	github.com/mholt/archiver/v3 v3.5.1
 	sigs.k8s.io/kustomize/kyaml v0.15.0
 )

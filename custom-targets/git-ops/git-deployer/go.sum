@@ -24,6 +24,8 @@ cloud.google.com/go/trace v1.11.6 h1:2O2zjPzqPYAHrn3OKl029qlqG6W8ZdYaOWRyr8NgMT4
 cloud.google.com/go/trace v1.11.6/go.mod h1:GA855OeDEBiBMzcckLPE2kDunIpC72N+Pq8WFieFjnI=
 github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util v0.0.0-20231208154754-dafec52e77a0 h1:nzryTNZY7PxdI1uItHtqwcg/OpiDiidy/43S0lnx7W0=
 github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util v0.0.0-20231208154754-dafec52e77a0/go.mod h1:p1Y55sQcx0HkCWhWdE/FcDz3Ox5fxQT+MMoZHGqY4wg=
+github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/cdenv v0.0.0-20250721143256-d108f2df4f09 h1:n29uFH+Xf2C1WPIl0g//pHIgLbFa4NR6nAwaNu+vb+4=
+github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/cdenv v0.0.0-20250721143256-d108f2df4f09/go.mod h1:b4A6f7WW+98/6ztNI6lL4KigXpjhh2OhaclMm+OXUWY=
 github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/secrets v0.0.0-20250709122056-37571ed5ce9a h1:P82DYAZqSXHDVz+FWDXtzz9+iydjpqwDRfSkdlNcDuI=
 github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/secrets v0.0.0-20250709122056-37571ed5ce9a/go.mod h1:7Paa/OVSPC9fSIOEd9ZbNNBU0kb5p4mY49Ulos5TMLM=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.27.0 h1:ErKg/3iS1AKcTkf3yixlZ54f9U1rljCkQyEXWUnIUxc=

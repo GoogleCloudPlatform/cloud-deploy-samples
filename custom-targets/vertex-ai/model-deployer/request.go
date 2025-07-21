@@ -17,13 +17,15 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
-	"google.golang.org/api/aiplatform/v1"
 	"os"
 	"strconv"
 	"strings"
 
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
+	"google.golang.org/api/aiplatform/v1"
+
 	"cloud.google.com/go/storage"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/cdenv"
 )
 
 // Environment variable keys specific to the vertex ai deployer. These are provided via
@@ -72,7 +74,7 @@ func createRequestHandler(cloudDeployRequest interface{}, params *params, gcsCli
 		}, nil
 
 	default:
-		return nil, fmt.Errorf("received unsupported cloud deploy request type: %q", os.Getenv(clouddeploy.RequestTypeEnvKey))
+		return nil, fmt.Errorf("received unsupported cloud deploy request type: %q", os.Getenv(cdenv.RequestTypeEnvKey))
 	}
 }
 
@@ -161,12 +163,12 @@ func newAliasHandler(gcsClient *storage.Client) (requestHandler, error) {
 	aliases := strings.Split(aliasParameter, ",")
 
 	request := &addAliasesRequest{
-		project:  os.Getenv(clouddeploy.ProjectEnvKey),
-		location: os.Getenv(clouddeploy.LocationEnvKey),
-		pipeline: os.Getenv(clouddeploy.PipelineEnvKey),
-		release:  os.Getenv(clouddeploy.ReleaseEnvKey),
-		target:   os.Getenv(clouddeploy.TargetEnvKey),
-		phase:    os.Getenv(clouddeploy.PhaseEnvKey),
+		project:  os.Getenv(cdenv.ProjectEnvKey),
+		location: os.Getenv(cdenv.LocationEnvKey),
+		pipeline: os.Getenv(cdenv.PipelineEnvKey),
+		release:  os.Getenv(cdenv.ReleaseEnvKey),
+		target:   os.Getenv(cdenv.TargetEnvKey),
+		phase:    os.Getenv(cdenv.PhaseEnvKey),
 		aliases:  aliases,
 	}
 	return &aliasAssigner{gcsClient: gcsClient, request: request}, nil

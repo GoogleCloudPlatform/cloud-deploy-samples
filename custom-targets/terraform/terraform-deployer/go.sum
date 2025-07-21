@@ -12,6 +12,8 @@ cloud.google.com/go/storage v1.35.1/go.mod h1:M6M/3V/D3KpzMTJyPOR/HU6n2Si5QdaXYE
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util v0.0.0-20231207200055-51cc2d1597d3 h1:2xBaOMtnJLOOaN3ndc+INnKOwhnjnvSxjOUXHKqkhDs=
 github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util v0.0.0-20231207200055-51cc2d1597d3/go.mod h1:p1Y55sQcx0HkCWhWdE/FcDz3Ox5fxQT+MMoZHGqY4wg=
+github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/cdenv v0.0.0-20250721143256-d108f2df4f09 h1:n29uFH+Xf2C1WPIl0g//pHIgLbFa4NR6nAwaNu+vb+4=
+github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/cdenv v0.0.0-20250721143256-d108f2df4f09/go.mod h1:b4A6f7WW+98/6ztNI6lL4KigXpjhh2OhaclMm+OXUWY=
 github.com/agext/levenshtein v1.2.3 h1:YB2fHEn0UJagG8T1rrWknE3ZQzWM06O8AMAatNn7lmo=
 github.com/agext/levenshtein v1.2.3/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
 github.com/andybalholm/brotli v1.0.1/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
