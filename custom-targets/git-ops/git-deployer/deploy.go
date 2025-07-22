@@ -28,6 +28,7 @@ import (
 	"cloud.google.com/go/storage"
 	provider "github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/git-ops/git-deployer/providers"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/gcs"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/secrets"
 )
 
@@ -135,7 +136,7 @@ func (d *deployer) deploy(ctx context.Context) (*clouddeploy.DeployResult, error
 	}
 
 	fmt.Println("Uploading rendered manifest as a deploy artifact")
-	dURI, err := d.req.UploadArtifact(ctx, d.gcsClient, "manifest.yaml", &clouddeploy.GCSUploadContent{LocalPath: gitManifestPath})
+	dURI, err := d.req.UploadArtifact(ctx, d.gcsClient, "manifest.yaml", &gcs.UploadContent{LocalPath: gitManifestPath})
 	if err != nil {
 		return nil, fmt.Errorf("error uploading deploy artifact: %v", err)
 	}

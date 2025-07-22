@@ -30,6 +30,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/cdenv"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/gcs"
 	"github.com/mholt/archiver/v3"
 )
 
@@ -118,7 +119,7 @@ const (
 func (r *RenderRequest) DownloadAndUnarchiveInput(ctx context.Context, gcsClient *storage.Client, localArchivePath, localUnarchivePath string) (string, error) {
 	// For render the input gcs path is the path to the source archive.
 	uri := r.InputGCSPath
-	out, err := downloadGCS(ctx, gcsClient, uri, localArchivePath)
+	out, err := gcs.Download(ctx, gcsClient, uri, localArchivePath)
 	if err != nil {
 		return "", err
 	}
@@ -131,13 +132,13 @@ func (r *RenderRequest) DownloadAndUnarchiveInput(ctx context.Context, gcsClient
 
 // UploadArtifact uploads the provided content as a rendered artifact. The objectSuffix must be provided
 // to determine the Cloud Storage URI to use for the object, the URI is returned.
-func (r *RenderRequest) UploadArtifact(ctx context.Context, gcsClient *storage.Client, objectSuffix string, content *GCSUploadContent) (string, error) {
+func (r *RenderRequest) UploadArtifact(ctx context.Context, gcsClient *storage.Client, objectSuffix string, content *gcs.UploadContent) (string, error) {
 	if len(objectSuffix) == 0 {
 		return "", fmt.Errorf("objectSuffix must be provided to upload a render artifact")
 	}
 	// For render the output gcs path is the path to a Cloud Storage directory.
 	uri := fmt.Sprintf("%s/%s", r.OutputGCSPath, objectSuffix)
-	if err := uploadGCS(ctx, gcsClient, uri, content); err != nil {
+	if err := gcs.Upload(ctx, gcsClient, uri, content); err != nil {
 		return "", err
 	}
 	return uri, nil
@@ -151,7 +152,7 @@ func (r *RenderRequest) UploadResult(ctx context.Context, gcsClient *storage.Cli
 	if err != nil {
 		return "", fmt.Errorf("error marshalling render result: %v", err)
 	}
-	if err := uploadGCS(ctx, gcsClient, uri, &GCSUploadContent{Data: res}); err != nil {
+	if err := gcs.Upload(ctx, gcsClient, uri, &gcs.UploadContent{Data: res}); err != nil {
 		return "", err
 	}
 	return uri, nil
@@ -229,7 +230,7 @@ func (d *DeployRequest) DownloadInput(ctx context.Context, gcsClient *storage.Cl
 	// For deploy the input gcs path is a path to a GCS directory. Need the suffix used when uploading at render
 	// time to determine the object to download.
 	uri := fmt.Sprintf("%s/%s", d.InputGCSPath, objectSuffix)
-	_, err := downloadGCS(ctx, gcsClient, uri, localPath)
+	_, err := gcs.Download(ctx, gcsClient, uri, localPath)
 	if err != nil {
 		return "", err
 	}
@@ -240,7 +241,7 @@ func (d *DeployRequest) DownloadInput(ctx context.Context, gcsClient *storage.Cl
 func (d *DeployRequest) DownloadManifest(ctx context.Context, gcsClient *storage.Client, localPath string) (string, error) {
 	// The manifest gcs path is the path to the manifest file provided at render time.
 	uri := d.ManifestGCSPath
-	if _, err := downloadGCS(ctx, gcsClient, uri, localPath); err != nil {
+	if _, err := gcs.Download(ctx, gcsClient, uri, localPath); err != nil {
 		return "", err
 	}
 	return uri, nil
@@ -248,13 +249,13 @@ func (d *DeployRequest) DownloadManifest(ctx context.Context, gcsClient *storage
 
 // UploadArtifact uploads the provided content as a deploy artifact. The objectSuffix must be provided
 // to determine the Cloud Storage URI to use for the object, the URI is returned.
-func (d *DeployRequest) UploadArtifact(ctx context.Context, gcsClient *storage.Client, objectSuffix string, content *GCSUploadContent) (string, error) {
+func (d *DeployRequest) UploadArtifact(ctx context.Context, gcsClient *storage.Client, objectSuffix string, content *gcs.UploadContent) (string, error) {
 	if len(objectSuffix) == 0 {
 		return "", fmt.Errorf("objectSuffix must be provided to upload a deploy artifact")
 	}
 	// For deploy the output gcs path is the path to a Cloud Storage directory.
 	uri := fmt.Sprintf("%s/%s", d.OutputGCSPath, objectSuffix)
-	if err := uploadGCS(ctx, gcsClient, uri, content); err != nil {
+	if err := gcs.Upload(ctx, gcsClient, uri, content); err != nil {
 		return "", err
 	}
 	return uri, nil
@@ -268,7 +269,7 @@ func (d *DeployRequest) UploadResult(ctx context.Context, gcsClient *storage.Cli
 	if err != nil {
 		return "", fmt.Errorf("error marshalling deploy result: %v", err)
 	}
-	if err := uploadGCS(ctx, gcsClient, uri, &GCSUploadContent{Data: res}); err != nil {
+	if err := gcs.Upload(ctx, gcsClient, uri, &gcs.UploadContent{Data: res}); err != nil {
 		return "", err
 	}
 	return uri, nil
