@@ -1,6 +1,6 @@
-module color-backend
+module github.com/GoogleCloudPlatform/cloud-deploy-samples
 
-go 1.24
+go 1.24.4
 
 require (
 	cloud.google.com/go/compute/metadata v0.3.0
