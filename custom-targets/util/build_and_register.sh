@@ -71,13 +71,23 @@ boldout "This will take approximately 10 minutes"
 
 # get the commit hash to pass to the build
 COMMIT_SHA=$(git rev-parse --verify HEAD)
-
 CLOUDBUILD_YAML="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/cloudbuild.yaml"
-# Using `beta` because the non-beta command won't stream the build logs
-gcloud -q beta builds submit --project="$PROJECT" --region="$REGION" \
-    --substitutions=_AR_REPO_NAME=cd-custom-targets,_IMAGE_NAME=${_CT_IMAGE_NAME},COMMIT_SHA="${COMMIT_SHA}" \
-    --config="${CLOUDBUILD_YAML}" \
-    "${_CT_SRCDIR}"
+PATH_SUFFIX=$(basename "${_CT_SRCDIR}")
+# TODO: b/430551407 - Remove else condition once the refactor is complete.
+if [[ "$PATH_SUFFIX" == "cloud-deploy-samples" ]]; then
+  # Using `beta` because the non-beta command won't stream the build logs
+    gcloud -q beta builds submit --project="$PROJECT" --region="$REGION" \
+      --substitutions=_AR_REPO_NAME=cd-custom-targets,_IMAGE_NAME=${_CT_IMAGE_NAME},COMMIT_SHA="${COMMIT_SHA}",_DOCKERFILE_PATH="${_CT_DOCKERFILE_LOCATION}" \
+      --config="${CLOUDBUILD_YAML}" \
+      "${_CT_SRCDIR}"
+else
+  _CT_DOCKERFILE_LOCATION="Dockerfile"
+  # Using `beta` because the non-beta command won't stream the build logs
+    gcloud -q beta builds submit --project="$PROJECT" --region="$REGION" \
+      --substitutions=_AR_REPO_NAME=cd-custom-targets,_IMAGE_NAME=${_CT_IMAGE_NAME},COMMIT_SHA="${COMMIT_SHA}",_DOCKERFILE_PATH="${_CT_DOCKERFILE_LOCATION}" \
+      --config="${CLOUDBUILD_YAML}" \
+      "${_CT_SRCDIR}"
+fi
 
 IMAGE_SHA=$(gcloud -q artifacts docker images describe "${AR_REPO}/${_CT_IMAGE_NAME}:latest" --project "${PROJECT}" --format 'get(image_summary.digest)')
 

@@ -3,8 +3,12 @@ steps:
   - name: docker
     script: |
       set -e
-      # Find all directories that container a file named `Dockerfile`
+      # Find all directories that contain a file named `Dockerfile`
       for dir in $(find . -type d -exec test -e '{}'/Dockerfile \; -print); do
         echo "BUILDING $dir"
-        docker build $dir
+        if [[ "$dir" == "./custom-targets/git-ops/git-deployer" ]]; then
+          docker build . -f "$dir/Dockerfile"
+        else
+          docker build $dir
+        fi
       done
