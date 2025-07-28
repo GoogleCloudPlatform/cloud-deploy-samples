@@ -8,9 +8,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v5
-      - name: Test the model deployer
+      - name: Test the Vertex AI model deployer
         working-directory: ./custom-targets/vertex-ai/model-deployer
-        run: go test -cover
-      - name: Test the postdeploy hook kuberenetes cleanup sample
+        run: go test -cover -v
+      - name: Test the postdeploy hook kubernetes cleanup sample
         working-directory: ./postdeploy-hooks/k8s-cleanup
-        run: go test -v
+        run: go test -cover -v
+      - name: Test the GCS package
+        working-directory: ./packages/gcs
+        run: go test -cover -v

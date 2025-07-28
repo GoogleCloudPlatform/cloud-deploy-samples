@@ -13,7 +13,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/mholt/archiver/v3"
-	"google3/testing/gobase/googletest"
 )
 
 func TestParseGCSURI(t *testing.T) {
@@ -136,7 +135,7 @@ func TestDownloadGCS(t *testing.T) {
 		{
 			desc:      "empty URI",
 			gcsURI:    "",
-			localPath: filepath.Join(googletest.TestTmpDir, "workspace"),
+			localPath: filepath.Join(t.TempDir(), "workspace"),
 		},
 	}
 	for _, test := range invalidtc {
