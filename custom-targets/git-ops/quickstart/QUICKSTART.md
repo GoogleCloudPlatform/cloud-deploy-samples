@@ -138,6 +138,8 @@ gcloud deploy rollouts describe release-001-to-git-dev-0001 --release=release-00
 
 Once the rollout has succeeded there should be a pull request created in the Git repository from branch `deploy` to `main` with the rendered manifest in the path `dev/k8s.yaml`. These were all configured as deploy parameters, see the `clouddeploy.yaml`.
 
+Approve and merge the PR before moving onto the next step.
+
 ## 10. Promote the release
 Promote the release to start a rollout for the prod target.
 

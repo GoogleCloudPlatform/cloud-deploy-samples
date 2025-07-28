@@ -106,7 +106,7 @@ func (d *deployer) deploy(ctx context.Context) (*clouddeploy.DeployResult, error
 	}
 
 	localManifest := "manifest.yaml"
-	fmt.Printf("Downloaded rendered manifest to %s\n", localManifest)
+	fmt.Printf("Downloading rendered manifest to %s\n", localManifest)
 	mURI, err := d.req.DownloadManifest(ctx, d.gcsClient, localManifest)
 	if err != nil {
 		return nil, fmt.Errorf("unable to download rendered manifest: %v", err)
