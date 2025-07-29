@@ -19,9 +19,9 @@ FROM golang:${GO_VERSION} AS go-build
 ARG COMMIT_SHA=unknown
 WORKDIR /app
 COPY go.mod go.sum ./
-COPY *.go ./
+COPY custom-targets/terraform/terraform-deployer/*.go ./custom-targets/terraform/terraform-deployer/
 RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy.GitCommit=${COMMIT_SHA}" -o /terraform-deployer
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy.GitCommit=${COMMIT_SHA}" -o /terraform-deployer ./custom-targets/terraform/terraform-deployer/
 
 FROM debian:stable-slim AS dependencies
 ARG TERRAFORM_VERSION

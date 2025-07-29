@@ -6,7 +6,9 @@ steps:
       # Find all directories that contain a file named `Dockerfile`
       for dir in $(find . -type d -exec test -e '{}'/Dockerfile \; -print); do
         echo "BUILDING $dir"
-        if [[ "$dir" == "./custom-targets/git-ops/git-deployer" || "$dir" == "./custom-targets/helm/helm-deployer" ]]; then
+        if [[ "$dir" == "./custom-targets/git-ops/git-deployer" ]] || \
+           [[ "$dir" == "./custom-targets/terraform/terraform-deployer" ]] || \
+           [[ "$dir" == "./custom-targets/helm/helm-deployer" ]]; then
           docker build . -f "$dir/Dockerfile"
         else
           docker build $dir
