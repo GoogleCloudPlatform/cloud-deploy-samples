@@ -8,6 +8,7 @@ require (
 	github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util v0.0.0-20231208154754-dafec52e77a0
 	github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/cdenv v0.0.0-20250721143256-d108f2df4f09
 	github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/secrets v0.0.0-20250709122056-37571ed5ce9a
+	github.com/mholt/archiver/v3 v3.5.1
 )
 
 require (
@@ -38,7 +39,6 @@ require (
 	github.com/googleapis/gax-go/v2 v2.14.2 // indirect
 	github.com/klauspost/compress v1.17.4 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
-	github.com/mholt/archiver/v3 v3.5.1 // indirect
 	github.com/nwaples/rardecode v1.1.3 // indirect
 	github.com/pierrec/lz4/v4 v4.1.19 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
