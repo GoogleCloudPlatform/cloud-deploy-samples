@@ -70,8 +70,8 @@ The deploy process consists of the following steps:
 3. Run `helm upgrade` for the provided Helm chart using the Cloud Deploy Delivery Pipeline ID as the Helm Release name.
 
     a. If `customTarget/helmUpgradeTimeout` is set, e.g. `10m`, then `--timeout=10m` arg is used.
-    
-    b. If `customTarget/helmNamespace` is defined then `--namespace=${customTarget/helmNamespace}` arg is used.
+
+    b. If `customTarget/helmNamespace` is defined then `--namespace=${customTarget/helmNamespace}` arg is used. The namespace you specify is created if it does not exist.
 
 4. Run `helm get manifest` to get the manifest applied by the Helm Release and upload it to Cloud Storage as a Cloud Deploy deploy artifact.
 

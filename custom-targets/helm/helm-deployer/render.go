@@ -92,7 +92,7 @@ func (r *renderer) render(ctx context.Context) (*clouddeploy.RenderResult, error
 	}
 	fmt.Printf("Downloaded render input archive from %s\n", inURI)
 
-	// If template lookup or template validatation is enabled then connect to the cluster at render time.
+	// If template lookup or template validation is enabled then connect to the cluster at render time.
 	if r.params.templateLookup || r.params.templateValidate {
 		fmt.Printf("Helm template lookup or validate enabled. Setting up cluster credentials for %s\n", r.params.gkeCluster)
 		if _, err := gcloudClusterCredentials(r.params.gkeCluster); err != nil {

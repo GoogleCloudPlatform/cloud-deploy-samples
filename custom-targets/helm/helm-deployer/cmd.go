@@ -72,6 +72,7 @@ func helmUpgrade(releaseName, chartPath string, opts *helmUpgradeOptions) ([]byt
 	}
 	if len(opts.helmOptions.namespace) > 0 {
 		args = append(args, fmt.Sprintf("--namespace=%s", opts.helmOptions.namespace))
+		args = append(args, "--create-namespace")
 	}
 	return runCmd(helmBin, args, false)
 }
