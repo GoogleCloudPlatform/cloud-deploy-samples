@@ -18,9 +18,9 @@ FROM golang:${GO_VERSION} AS go-build
 ARG COMMIT_SHA=unknown
 WORKDIR /app
 COPY go.mod go.sum ./
-COPY *.go ./
+COPY custom-targets/vertex-ai/model-deployer/*.go ./custom-targets/vertex-ai/model-deployer/
 RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy.GitCommit=${COMMIT_SHA}" -o /vertex-ai-deployer
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy.GitCommit=${COMMIT_SHA}" -o /vertex-ai-deployer ./custom-targets/vertex-ai/model-deployer/
 
 FROM gcr.io/distroless/static-debian12:latest AS release
 COPY --from=go-build /vertex-ai-deployer /bin/vertex-ai-deployer
