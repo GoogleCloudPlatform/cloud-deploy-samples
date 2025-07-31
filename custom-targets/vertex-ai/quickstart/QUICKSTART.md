@@ -122,7 +122,7 @@ export TMPDIR=$(mktemp -d)
 The command does the following:
 1. Creates temporary directory $TMPDIR and copies `clouddeploy.yaml` and `configuration` into it.
 2. Replaces the placeholders in `$TMPDIR/clouddeploy.yaml`
-3. Obtains the URL of the latest version of the custom image, built in step 6, and sets it in `$TMPDIR/configuration/skaffold.yaml`
+3. Obtains the URL of the latest version of the custom image, built in step 3, and sets it in `$TMPDIR/configuration/skaffold.yaml`
 
 
 Lastly, apply the Cloud Deploy configuration defined in `clouddeploy.yaml`:
