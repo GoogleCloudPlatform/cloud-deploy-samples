@@ -180,7 +180,6 @@ func determineConfigFileLocation(configRelativePath string) (string, bool) {
 // loadConfigurationFile loads and returns the configuration file for the target if it exists.
 func loadConfigurationFile(configPath string) ([]byte, error) {
 	filePath, shouldErrOnMissingFile := determineConfigFileLocation(configPath)
-	fmt.Errorf("HERE: %s", filePath)
 	fileInfo, err := os.Stat(filePath)
 	if err != nil && shouldErrOnMissingFile {
 		return nil, err
