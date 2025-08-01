@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package main implements a Cloud Deploy Custom Target for deploying
+// Google Cloud infrastructure resources deployments using Terraform.
 package main
 
 import (
