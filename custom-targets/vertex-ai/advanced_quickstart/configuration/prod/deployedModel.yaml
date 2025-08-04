@@ -11,11 +11,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-apiVersion: skaffold/v4beta7
-kind: Config
-customActions:
-- name: add-aliases
-  containers:
-  - name: add-aliases
-    image: us-central1-docker.pkg.dev/angel-gcp-starter-project2/cd-custom-targets/vertexai@$35b956514308af935fbec6c0c4d1d3627d1731060a211cb3d8733f8b323c3443
-    args: ["/bin/vertex-ai-deployer", "--add-aliases-mode"]
+dedicatedResources:
+  maxReplicaCount: 9

@@ -17,11 +17,33 @@ metadata:
   name: vertex-ai-cloud-deploy-pipeline
 serialPipeline:
   stages:
-  - targetId: prod-endpoint
+  - targetId: dev-endpoint
     strategy:
       standard:
         postdeploy:
           actions: ["add-aliases"]
+  - targetId: prod-endpoint
+    strategy:
+      canary:
+        customCanaryDeployment:
+          phaseConfigs:
+          - phaseId: "phase1"
+            percentage: 50
+          - phaseId: "stable"
+            percentage: 100
+            postdeploy:
+              actions: ["add-aliases"]
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: dev-endpoint
+customTarget:
+  customTargetType: vertex-ai-endpoint
+deployParameters:
+  customTarget/vertexAIEndpoint: projects/$PROJECT_ID/locations/$REGION/endpoints/$DEV_ENDPOINT_ID
+  customTarget/vertexAIMinReplicaCount: "3"
+  customTarget/vertexAIAliases: "dev,challenger"
 ---
 apiVersion: deploy.cloud.google.com/v1
 kind: Target
@@ -30,7 +52,7 @@ metadata:
 customTarget:
   customTargetType: vertex-ai-endpoint
 deployParameters:
-  customTarget/vertexAIEndpoint: projects/angel-gcp-starter-project2/locations/us-central1/endpoints/prod
+  customTarget/vertexAIEndpoint: projects/$PROJECT_ID/locations/$REGION/endpoints/$PROD_ENDPOINT_ID
   customTarget/vertexAIConfigurationPath: "prod/deployedModel.yaml"
-  customTarget/vertexAIMinReplicaCount: "3"
+  customTarget/vertexAIMinReplicaCount: "5"
   customTarget/vertexAIAliases: "prod,champion"
