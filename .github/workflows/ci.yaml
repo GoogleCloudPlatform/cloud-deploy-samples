@@ -11,6 +11,9 @@ jobs:
       - name: Test the Vertex AI model deployer
         working-directory: ./custom-targets/vertex-ai/model-deployer
         run: go test -cover -v
+      - name: Test the Vertex AI pipeline deployer
+        working-directory: ./custom-targets/vertex-ai-pipeline/pipeline-deployer
+        run: go test -cover -v
       - name: Test the postdeploy hook kubernetes cleanup sample
         working-directory: ./postdeploy-hooks/k8s-cleanup
         run: go test -cover -v

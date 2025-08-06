@@ -2,41 +2,154 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
+	"github.com/google/go-cmp/cmp"
+	"google.golang.org/api/aiplatform/v1"
 )
 
-func TestCreateRequestHandler(t *testing.T) {
+func TestCreateRequestHandlerValidRequest(t *testing.T) {
 	aiService, _ := newAIPlatformService(context.Background(), "us-central1")
-	req, err := createRequestHandler(&clouddeploy.RenderRequest{}, &params{}, &storage.Client{}, aiService)
-	if err != nil {
-		t.Errorf("Expected: success, Actual: %s", err)
-	}
-	switch req.(type) {
-	case *renderer:
-		fmt.Println("Handler is a renderer")
-	default:
-		t.Errorf("Expected: renderer, Actual: uknown type")
+	storageClient := &storage.Client{}
+	testParams := &params{}
+	testProject := "test-project"
+	testLocation := "us-central1"
+	testPipeline := "test-pipeline"
+	testTarget := "test-target"
+	testPhase := "test-phase"
+	testPercentage := 100
+	testStorageType := "GCS"
+	testInputGCSPath := `gs://test-bucket/test-file.txt`
+	testOutputGCSPath := `gs://test-bucket/test-output.txt`
+	testWorkloadType := "CB"
+	testServiceAccount := "test-service-account"
+	testWorkerPool := "test-worker-pool"
+	testRelease := "test-release"
+	testRollout := "test-rollout"
+	testSkaffoldGCSPath := `gs://test-bucket/test-skaffold.yaml`
+	testManifestGCSPath := `gs://test-bucket/test-manifest.yaml`
+
+	renderRequest := &clouddeploy.RenderRequest{
+		Project:       testProject,
+		Location:      testLocation,
+		Pipeline:      testPipeline,
+		Target:        testTarget,
+		Phase:         testPhase,
+		Percentage:    testPercentage,
+		StorageType:   testStorageType,
+		InputGCSPath:  testInputGCSPath,
+		OutputGCSPath: testOutputGCSPath,
+		WorkloadType:  testWorkloadType,
+		WorkloadCBInfo: clouddeploy.CloudBuildWorkload{
+			ServiceAccount: testServiceAccount,
+			WorkerPool:     testWorkerPool,
+		},
 	}
 
-	req, err = createRequestHandler(&clouddeploy.DeployRequest{}, &params{}, &storage.Client{}, aiService)
-	if err != nil {
-		t.Errorf("Expected: success, Actual: %s", err)
-	}
-	switch req.(type) {
-	case *deployer:
-		fmt.Println("Handler is a deployer")
-	default:
-		t.Errorf("Expected: deployer, Actual: uknown type")
+	deployRequest := &clouddeploy.DeployRequest{
+		Project:         testProject,
+		Location:        testLocation,
+		Pipeline:        testPipeline,
+		Release:         testRelease,
+		Rollout:         testRollout,
+		Target:          testTarget,
+		Phase:           testRollout,
+		Percentage:      testPercentage,
+		StorageType:     testStorageType,
+		InputGCSPath:    testInputGCSPath,
+		SkaffoldGCSPath: testSkaffoldGCSPath,
+		ManifestGCSPath: testManifestGCSPath,
+		OutputGCSPath:   testOutputGCSPath,
+		WorkloadType:    testWorkloadType,
+		WorkloadCBInfo: clouddeploy.CloudBuildWorkload{
+			ServiceAccount: testServiceAccount,
+			WorkerPool:     testWorkerPool,
+		},
 	}
 
-	req, err = createRequestHandler(&clouddeploy.RenderResult{}, &params{}, &storage.Client{}, aiService)
-	if err == nil {
-		t.Errorf("Expected: ERROR, Actual: %s", err)
+	tests := []struct {
+		name               string
+		cloudDeployRequest any
+		params             *params
+		client             *storage.Client
+		service            *aiplatform.Service
+		wantRequestHandler requestHandler
+	}{
+		{
+			name:               "works with Render Request Handler",
+			cloudDeployRequest: renderRequest,
+			params:             testParams,
+			client:             storageClient,
+			service:            aiService,
+			wantRequestHandler: &renderer{
+				gcsClient:         storageClient,
+				aiPlatformService: aiService,
+				params:            testParams,
+				req:               renderRequest,
+			},
+		},
+		{
+			name:               "works with Deploy Request Handler",
+			cloudDeployRequest: deployRequest,
+			params:             testParams,
+			client:             storageClient,
+			service:            aiService,
+			wantRequestHandler: &deployer{
+				gcsClient:         storageClient,
+				aiPlatformService: aiService,
+				params:            testParams,
+				req:               deployRequest,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			req, err := createRequestHandler(test.cloudDeployRequest, test.params, test.client, test.service)
+			if err != nil {
+				t.Errorf("createRequestHandler() returned an error: %v", err)
+			}
+
+			opts := []cmp.Option{
+				cmp.AllowUnexported(renderer{}, deployer{}, params{}, storage.Client{}, aiplatform.Service{}), // Allow comparing unexported fields
+			}
+
+			if diff := cmp.Diff(test.wantRequestHandler, req, opts...); diff != "" {
+				t.Errorf("createRequestHandler() returned diff (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestCreateRequestHandlerInvalidRequest(t *testing.T) {
+	tests := []struct {
+		name               string
+		cloudDeployRequest any
+		wantErrorSubstring string
+	}{
+		{
+			// This function expects a RenderRequest or DeployRequest
+			name:               "fails when given random struct",
+			cloudDeployRequest: &clouddeploy.RenderResult{},
+			wantErrorSubstring: `received unsupported cloud deploy request type: ""`,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := createRequestHandler(test.cloudDeployRequest, &params{}, &storage.Client{}, &aiplatform.Service{})
+			if err == nil {
+				t.Fatalf("createRequestHandler() got err = nil, want %v", test.wantErrorSubstring)
+			}
+
+			if !strings.Contains(err.Error(), test.wantErrorSubstring) {
+				t.Fatalf("createRequestHandler() returned error (%v) want %v", err, test.wantErrorSubstring)
+			}
+		})
 	}
 }
 
