@@ -67,8 +67,8 @@ func getQueryText(timeOfStart time.Time) string {
 	}
 	// Specify the start time.
 	sb.WriteString(" | ")
-	dateTime := strings.ReplaceAll(timeOfStart.UTC().Format(time.DateTime), "-", "/")
-	sb.WriteString(fmt.Sprintf("within d'%s'", dateTime))
+	duration := time.Since(timeOfStart)
+	sb.WriteString(fmt.Sprintf("within d'%s'", duration.String()))
 	// Group by the specified sliding window
 	sb.WriteString(" | ")
 	sb.WriteString(fmt.Sprintf("group_by sliding(%v)", slidingWindow))
