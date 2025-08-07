@@ -74,7 +74,7 @@ type params struct {
 	// The location where the ML pipeline will be deployed
 	location string
 
-	//T he pipeline template that is being deployed
+	// The pipeline template that is being deployed
 	pipeline string
 
 	// The directory path where the renderer should look for target-specific configuration
