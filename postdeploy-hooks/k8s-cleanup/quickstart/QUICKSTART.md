@@ -80,8 +80,8 @@ repository:
 
 ```shell
 gcloud -q artifacts repositories add-iam-policy-binding \
-    --project "${PROJECT}" --location "${REGION}" cd-k8s-cleanup \
-    --member=serviceAccount:$(gcloud -q projects describe $PROJECT --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
+    --project "${PROJECT_ID}" --location "${REGION}" cd-k8s-cleanup \
+    --member=serviceAccount:$(gcloud -q projects describe $PROJECT_ID --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
     --role="roles/artifactregistry.reader"
 ```
 
@@ -89,9 +89,11 @@ Finally, set the image's location in an environment variable for use in future
 steps, then build and push the image:
 
 ```shell
+cd ../../../
 IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/cd-k8s-cleanup/k8s-cleanup
-docker build --tag $IMAGE ..
+docker build . -f "./postdeploy-hooks/k8s-cleanup/Dockerfile" --tag $IMAGE
 docker push $IMAGE
+cd ./postdeploy-hooks/k8s-cleanup/quickstart
 ```
 
 ## 5. Create a Google Kubernetes Engine cluster
