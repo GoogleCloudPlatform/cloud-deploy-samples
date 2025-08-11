@@ -10,7 +10,8 @@ steps:
            [[ "$dir" == "./custom-targets/terraform/terraform-deployer" ]] || \
            [[ "$dir" == "./custom-targets/vertex-ai/model-deployer" ]] || \
            [[ "$dir" == "./custom-targets/vertex-ai-pipeline/pipeline-deployer" ]] || \
-           [[ "$dir" == "./custom-targets/helm/helm-deployer" ]]; then
+           [[ "$dir" == "./custom-targets/helm/helm-deployer" ]] || \
+           [[ "$dir" == "./postdeploy-hooks/k8s-cleanup" ]]; then
           docker build . -f "$dir/Dockerfile"
         else
           docker build $dir

@@ -16,9 +16,10 @@ ARG GO_VERSION=1.24
 
 FROM golang:${GO_VERSION} AS build
 WORKDIR /cleanup
-COPY go.mod go.sum *.go ./
+COPY go.mod go.sum ./
+COPY postdeploy-hooks/k8s-cleanup/*.go ./postdeploy-hooks/k8s-cleanup/
 RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -o /cleanup-kubernetes-resources
+RUN CGO_ENABLED=0 GOOS=linux go build -o /cleanup-kubernetes-resources ./postdeploy-hooks/k8s-cleanup/
 
 FROM  gcr.io/google.com/cloudsdktool/google-cloud-cli:${GCLOUD_VERSION}
 WORKDIR /

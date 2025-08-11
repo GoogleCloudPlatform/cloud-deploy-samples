@@ -57,7 +57,8 @@ func apiResourcesQueryArgs() []string {
 }
 
 // kubectlGetArgs returns the args to pass to kubectl to get the resource name,
-// given the resource type and namespace
+// given the resource type and namespace. It uses the Cloud Deploy labels on the resources to filter
+// to just those deployed by Cloud Deploy.
 func kubectlGetArgs(includeReleaseLabel bool, resourceType string, nspace string) []string {
 
 	var labels []string
@@ -157,13 +158,14 @@ func (ce CommandExecutor) deleteResources(resources []string) error {
 	for _, resource := range resources {
 		args := []string{"delete", resource, "--ignore-not-found=true"}
 		_, err := ce.execCommand(args)
-		// If the code returned is MethodNotAllowed log that and continue. This
-		// has popped up for example when trying to delete the podmetrics resource.
-		if strings.Contains(err.Error(), "MethodNotAllowed") {
-			fmt.Printf("Unable to delete resource: %s. Deleting that resource is not allowed.\n Continuing on to delete other resources.", resource)
-			continue
-		}
 		if err != nil {
+			// If the code returned is MethodNotAllowed log that and continue. This
+			// has popped up for example when trying to delete the podmetrics resource.
+			if strings.Contains(err.Error(), "MethodNotAllowed") {
+				fmt.Printf("Unable to delete resource: %s. Deleting that resource is not allowed.\n Continuing on to delete other resources.", resource)
+				continue
+			}
+
 			return fmt.Errorf("attempting to delete resource %v resulted in err: %w", resource, err)
 		}
 	}
