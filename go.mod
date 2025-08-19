@@ -3,6 +3,7 @@ module github.com/GoogleCloudPlatform/cloud-deploy-samples
 go 1.24.4
 
 require (
+	cloud.google.com/go/monitoring v1.24.2
 	cloud.google.com/go/secretmanager v1.15.0
 	cloud.google.com/go/storage v1.50.0
 	github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util v0.0.0-20231208185506-3b5ad45cc0fc
@@ -25,7 +26,6 @@ require (
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.7.0 // indirect
 	cloud.google.com/go/iam v1.5.2 // indirect
-	cloud.google.com/go/monitoring v1.24.2 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.27.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.50.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.50.0 // indirect

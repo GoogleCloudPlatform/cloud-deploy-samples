@@ -14,9 +14,10 @@
 
 FROM golang:1.24 AS build
 WORKDIR /verify
-COPY go.mod go.sum main.go ./
+COPY go.mod go.sum ./
+COPY verify-evaluate-cloud-metrics/*.go ./verify-evaluate-cloud-metrics/
 RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -o /verify-evaluate-cloud-metrics
+RUN CGO_ENABLED=0 GOOS=linux go build -o /verify-evaluate-cloud-metrics ./verify-evaluate-cloud-metrics/
 
 FROM gcr.io/distroless/static-debian11:latest AS release
 WORKDIR /

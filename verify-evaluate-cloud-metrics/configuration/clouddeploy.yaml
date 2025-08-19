@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: deploy.cloud.google.com/v1beta1
+apiVersion: deploy.cloud.google.com/v1
 kind: Target
 metadata:
   name: prod-target
 description: Cloud Run Prod Service
 run:
-  location: projects/%PROJECT_ID%/locations/%RUN_LOCATION% # To be replaced
+  location: projects/%PROJECT_ID%/locations/%REGION% # To be replaced
 ---
 apiVersion: deploy.cloud.google.com/v1beta1
 kind: DeliveryPipeline
 metadata:
-  name: my-app
+  name: my-verify-pipeline
 description: main application pipeline
 serialPipeline:
   stages:
