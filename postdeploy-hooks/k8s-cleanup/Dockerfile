@@ -17,6 +17,7 @@ ARG GO_VERSION=1.24
 FROM golang:${GO_VERSION} AS build
 WORKDIR /cleanup
 COPY go.mod go.sum ./
+COPY packages/ ./packages/
 COPY postdeploy-hooks/k8s-cleanup/*.go ./postdeploy-hooks/k8s-cleanup/
 RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -o /cleanup-kubernetes-resources ./postdeploy-hooks/k8s-cleanup/
