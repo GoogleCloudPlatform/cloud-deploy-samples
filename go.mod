@@ -6,7 +6,6 @@ require (
 	cloud.google.com/go/monitoring v1.24.2
 	cloud.google.com/go/secretmanager v1.15.0
 	cloud.google.com/go/storage v1.55.0
-	github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util v0.0.0-20231208185506-3b5ad45cc0fc
 	github.com/fsouza/fake-gcs-server v1.52.2
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/hcl/v2 v2.24.0
@@ -15,6 +14,7 @@ require (
 	github.com/zclconf/go-cty v1.16.3
 	google.golang.org/api v0.237.0
 	k8s.io/apimachinery v0.28.4
+	sigs.k8s.io/kustomize/kyaml v0.15.0
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -69,6 +69,7 @@ require (
 	github.com/pkg/xattr v0.4.10 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.5.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
@@ -102,5 +103,4 @@ require (
 	k8s.io/klog/v2 v2.100.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
 	k8s.io/utils v0.0.0-20230505201702-9f6742963106 // indirect
-	sigs.k8s.io/kustomize/kyaml v0.15.0 // indirect
 )

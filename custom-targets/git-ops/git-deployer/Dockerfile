@@ -21,6 +21,7 @@ WORKDIR /app
 
 COPY go.mod go.sum ./
 COPY packages/ ./packages/
+COPY custom-targets/util/ ./custom-targets/util/
 COPY custom-targets/git-ops/git-deployer/*.go ./custom-targets/git-ops/git-deployer/
 COPY custom-targets/git-ops/git-deployer/providers/*.go ./custom-targets/git-ops/git-deployer/providers/
 RUN go mod download

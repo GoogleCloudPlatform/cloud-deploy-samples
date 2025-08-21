@@ -21,6 +21,7 @@ ARG COMMIT_SHA=unknown
 WORKDIR /app
 COPY go.mod go.sum ./
 COPY packages/ ./packages/
+COPY custom-targets/util/ ./custom-targets/util/
 COPY custom-targets/helm/helm-deployer/*.go ./custom-targets/helm/helm-deployer/
 RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy.GitCommit=${COMMIT_SHA}" -o /helm-deployer ./custom-targets/helm/helm-deployer
