@@ -54,7 +54,7 @@ gcloud iam service-accounts add-iam-policy-binding $(gcloud projects describe $P
     --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
     --role="roles/iam.serviceAccountUser" \
     --project=$PROJECT_ID
-    ```
+```
 
 Add the Cloud Run developer permissions:
 
@@ -63,7 +63,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member=serviceAccount:$(gcloud projects describe $PROJECT_ID \
     --format="value(projectNumber)")-compute@developer.gserviceaccount.com \
     --role="roles/run.developer"
-    ```
+```
 
 See [this page](https://cloud.google.com/deploy/docs/iam-roles-permissions) for more information about
 permissions used in Cloud Deploy.
