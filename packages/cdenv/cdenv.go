@@ -5,7 +5,10 @@ package cdenv
 const (
 	RequestTypeEnvKey = "CLOUD_DEPLOY_REQUEST_TYPE"
 	FeaturesEnvKey    = "CLOUD_DEPLOY_FEATURES"
-	ProjectEnvKey     = "CLOUD_DEPLOY_PROJECT"
+	// ProjectEnvKey contains the project number of the Cloud Deploy resource.
+	ProjectEnvKey = "CLOUD_DEPLOY_PROJECT"
+	// ProjectIDEnvKey contains the project ID of the Cloud Deploy resource.
+	ProjectIDEnvKey   = "CLOUD_DEPLOY_PROJECT_ID"
 	LocationEnvKey    = "CLOUD_DEPLOY_LOCATION"
 	PipelineEnvKey    = "CLOUD_DEPLOY_DELIVERY_PIPELINE"
 	ReleaseEnvKey     = "CLOUD_DEPLOY_RELEASE"
