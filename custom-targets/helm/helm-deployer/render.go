@@ -22,6 +22,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/gcs"
 )
 
 const (
@@ -119,14 +120,14 @@ func (r *renderer) render(ctx context.Context) (*clouddeploy.RenderResult, error
 	manifest = append(manifest, templateOut...)
 
 	fmt.Println("Uploading manifest from helm template")
-	mURI, err := r.req.UploadArtifact(ctx, r.gcsClient, "manifest.yaml", &clouddeploy.GCSUploadContent{Data: manifest})
+	mURI, err := r.req.UploadArtifact(ctx, r.gcsClient, "manifest.yaml", &gcs.UploadContent{Data: manifest})
 	if err != nil {
 		return nil, fmt.Errorf("error uploading manifest: %v", err)
 	}
 	fmt.Printf("Uploaded manifest from helm template to %s\n", mURI)
 
 	fmt.Println("Uploading archived helm configuration for use at deploy time")
-	ahURI, err := r.req.UploadArtifact(ctx, r.gcsClient, renderedArchiveName, &clouddeploy.GCSUploadContent{LocalPath: srcArchivePath})
+	ahURI, err := r.req.UploadArtifact(ctx, r.gcsClient, renderedArchiveName, &gcs.UploadContent{LocalPath: srcArchivePath})
 	if err != nil {
 		return nil, fmt.Errorf("error uploading archived helm configuration: %v", err)
 	}

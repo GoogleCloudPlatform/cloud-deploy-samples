@@ -21,6 +21,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/gcs"
 	"github.com/mholt/archiver/v3"
 )
 
@@ -106,7 +107,7 @@ func (d *deployer) deploy(ctx context.Context) (*clouddeploy.DeployResult, error
 		return nil, fmt.Errorf("error running helm get manifest aft upgrade: %v", err)
 	}
 	fmt.Println("Uploading helm release manifest as a deploy artifact")
-	mURI, err := d.req.UploadArtifact(ctx, d.gcsClient, "manifest.yaml", &clouddeploy.GCSUploadContent{Data: manifest})
+	mURI, err := d.req.UploadArtifact(ctx, d.gcsClient, "manifest.yaml", &gcs.UploadContent{Data: manifest})
 	if err != nil {
 		return nil, fmt.Errorf("error uploading helm release manifest deploy artifact: %v", err)
 	}
