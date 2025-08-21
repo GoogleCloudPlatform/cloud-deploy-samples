@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG GO_VERSION=1.21
+ARG GO_VERSION=1.24.4
 
 FROM golang:${GO_VERSION} AS go-build
 ARG COMMIT_SHA=unknown
 WORKDIR /app
+COPY custom-targets/util/ ./custom-targets/util/
 COPY go.mod go.sum ./
-COPY *.go ./
+COPY custom-targets/infrastructure-manager/im-deployer/*.go ./custom-targets/infrastructure-manager/im-deployer/
 RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy.GitCommit=${COMMIT_SHA}" -o /im-deployer
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy.GitCommit=${COMMIT_SHA}" -o /im-deployer ./custom-targets/infrastructure-manager/im-deployer/
 
 FROM gcr.io/distroless/static-debian12:latest AS release
 COPY --from=go-build /im-deployer /bin/im-deployer
