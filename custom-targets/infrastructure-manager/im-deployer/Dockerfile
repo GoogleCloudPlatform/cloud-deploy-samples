@@ -18,6 +18,7 @@ FROM golang:${GO_VERSION} AS go-build
 ARG COMMIT_SHA=unknown
 WORKDIR /app
 COPY custom-targets/util/ ./custom-targets/util/
+COPY packages/ ./packages/
 COPY go.mod go.sum ./
 COPY custom-targets/infrastructure-manager/im-deployer/*.go ./custom-targets/infrastructure-manager/im-deployer/
 RUN go mod download
