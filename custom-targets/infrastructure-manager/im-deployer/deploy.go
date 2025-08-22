@@ -216,5 +216,5 @@ func processDeploymentFailed(ctx context.Context, deployment *configpb.Deploymen
 			fmt.Printf("Revision Terraform error %d: %v\n", i+1, tfe.ErrorDescription)
 		}
 	}
-	return fmt.Errorf(failureMessage)
+	return fmt.Errorf("an error occurred: %s", failureMessage)
 }

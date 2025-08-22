@@ -26,6 +26,7 @@ import (
 	"cloud.google.com/go/config/apiv1/configpb"
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/cloud-deploy-samples/custom-targets/util/clouddeploy"
+	"github.com/GoogleCloudPlatform/cloud-deploy-samples/packages/gcs"
 	"github.com/ghodss/yaml"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
@@ -122,7 +123,7 @@ func (r *renderer) render(ctx context.Context) (*clouddeploy.RenderResult, error
 		return nil, fmt.Errorf("error archiving terraform configuration: %v", err)
 	}
 	fmt.Println("Uploading archived Terraform configuration")
-	tcURI, err := r.req.UploadArtifact(ctx, r.gcsClient, renderedArchiveName, &clouddeploy.GCSUploadContent{LocalPath: renderedArchiveName})
+	tcURI, err := r.req.UploadArtifact(ctx, r.gcsClient, renderedArchiveName, &gcs.UploadContent{LocalPath: renderedArchiveName})
 	if err != nil {
 		return nil, fmt.Errorf("error uploading archived terraform configuration: %v", err)
 	}
@@ -134,7 +135,7 @@ func (r *renderer) render(ctx context.Context) (*clouddeploy.RenderResult, error
 		return nil, fmt.Errorf("error creating rendered deployment: %v", err)
 	}
 	fmt.Println("Uploading rendered Deployment")
-	dURI, err := r.req.UploadArtifact(ctx, r.gcsClient, renderedDeploymentFileName, &clouddeploy.GCSUploadContent{Data: renderedDeploymentYAML})
+	dURI, err := r.req.UploadArtifact(ctx, r.gcsClient, renderedDeploymentFileName, &gcs.UploadContent{Data: renderedDeploymentYAML})
 	if err != nil {
 		return nil, fmt.Errorf("error uploading rendered deployment: %v", err)
 	}
