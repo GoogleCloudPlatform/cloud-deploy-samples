@@ -15,7 +15,7 @@
 
 set -e
 
-if [[ ! -v _CT_SRCDIR || ! -v _CT_IMAGE_NAME || ! -v _CT_TYPE_NAME || ! -v _CT_CUSTOM_ACTION_NAME || ! -v _CT_GCS_DIRECTORY || ! -v _CT_SKAFFOLD_CONFIG_NAME ]]; then
+if [[ ! -v _CT_IMAGE_NAME || ! -v _CT_TYPE_NAME || ! -v _CT_CUSTOM_ACTION_NAME || ! -v _CT_GCS_DIRECTORY || ! -v _CT_SKAFFOLD_CONFIG_NAME ]]; then
   echo "This script is not meant to be used on its own. Please launch it from one of the custom target directories."
   exit 1
 fi
@@ -72,22 +72,14 @@ boldout "This will take approximately 10 minutes"
 # get the commit hash to pass to the build
 COMMIT_SHA=$(git rev-parse --verify HEAD)
 CLOUDBUILD_YAML="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/cloudbuild.yaml"
-PATH_SUFFIX=$(basename "${_CT_SRCDIR}")
-# TODO: b/430551407 - Remove else condition once the refactor is complete.
-if [[ "$PATH_SUFFIX" == "cloud-deploy-samples" ]]; then
+# Get the name of the directory where this script is located.
+SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+PARENT_DIR="$(cd "$SOURCE_DIR/../../" && pwd)"
   # Using `beta` because the non-beta command won't stream the build logs
     gcloud -q beta builds submit --project="$PROJECT" --region="$REGION" \
       --substitutions=_AR_REPO_NAME=cd-custom-targets,_IMAGE_NAME=${_CT_IMAGE_NAME},COMMIT_SHA="${COMMIT_SHA}",_DOCKERFILE_PATH="${_CT_DOCKERFILE_LOCATION}" \
       --config="${CLOUDBUILD_YAML}" \
-      "${_CT_SRCDIR}"
-else
-  _CT_DOCKERFILE_LOCATION="Dockerfile"
-  # Using `beta` because the non-beta command won't stream the build logs
-    gcloud -q beta builds submit --project="$PROJECT" --region="$REGION" \
-      --substitutions=_AR_REPO_NAME=cd-custom-targets,_IMAGE_NAME=${_CT_IMAGE_NAME},COMMIT_SHA="${COMMIT_SHA}",_DOCKERFILE_PATH="${_CT_DOCKERFILE_LOCATION}" \
-      --config="${CLOUDBUILD_YAML}" \
-      "${_CT_SRCDIR}"
-fi
+      "${PARENT_DIR}"
 
 IMAGE_SHA=$(gcloud -q artifacts docker images describe "${AR_REPO}/${_CT_IMAGE_NAME}:latest" --project "${PROJECT}" --format 'get(image_summary.digest)')
 
