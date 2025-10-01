@@ -19,8 +19,10 @@ type postdeployHookResult struct {
 
 // uploadResult uploads the provided deploy result to the Cloud Storage path where Cloud Deploy expects it.
 func uploadResult(ctx context.Context, gcsClient *storage.Client, deployHookResult *postdeployHookResult) error {
-	// Get the GCS URI where the results file should be uploaded.
-	uri := os.Getenv(cdenv.OutputGCSEnvKey)
+	// Get the GCS URI where the results file should be uploaded. The full path is in the format of
+	// {outputPath}/{gcs.ResultObjectSuffix}.
+	outputPath := os.Getenv(cdenv.OutputGCSEnvKey)
+	uri := fmt.Sprintf("%s/%s", outputPath, gcs.ResultObjectSuffix)
 	jsonResult, err := json.Marshal(deployHookResult)
 	if err != nil {
 		return fmt.Errorf("error marshalling postdeploy hook result: %v", err)
