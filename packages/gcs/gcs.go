@@ -14,6 +14,9 @@ import (
 	"cloud.google.com/go/storage"
 )
 
+// ResultObjectSuffix is the Cloud Storage object suffix for the expected results file.
+const ResultObjectSuffix = "results.json"
+
 // Download downloads the Cloud Storage object for the specified URI to the provided local path.
 func Download(ctx context.Context, gcsClient *storage.Client, gcsURI, localPath string) (*os.File, error) {
 	gcsObj, err := parseGCSURI(gcsURI)
