@@ -1,4 +1,5 @@
 # Cloud Build YAML to run all presubmit tasks
+# Using a machine with 8 CPUs to speed up the builds.
 steps:
   - name: docker
     script: |
@@ -16,3 +17,5 @@ steps:
           docker build . -f "$dir/Dockerfile"
         fi
       done
+options:
+  machineType: 'E2_HIGHCPU_8'
