@@ -35,8 +35,6 @@ import (
 var GitCommit = "unknown"
 
 const (
-	// The Cloud Storage object suffix for the expected results file.
-	resultObjectSuffix = "results.json"
 
 	// cloudDeployEnvVarPrefix is the prefix for cloud deploy environment variables.
 	cloudDeployEnvVarPrefix = "CLOUD_DEPLOY_"
@@ -144,7 +142,7 @@ func (r *RenderRequest) UploadArtifact(ctx context.Context, gcsClient *storage.C
 // UploadResult uploads the provided render result to the Cloud Storage path where Cloud Deploy expects it.
 // Returns the Cloud Storage URI of the uploaded result.
 func (r *RenderRequest) UploadResult(ctx context.Context, gcsClient *storage.Client, renderResult *RenderResult) (string, error) {
-	uri := fmt.Sprintf("%s/%s", r.OutputGCSPath, resultObjectSuffix)
+	uri := fmt.Sprintf("%s/%s", r.OutputGCSPath, gcs.ResultObjectSuffix)
 	res, err := json.Marshal(renderResult)
 	if err != nil {
 		return "", fmt.Errorf("error marshalling render result: %v", err)
@@ -261,7 +259,7 @@ func (d *DeployRequest) UploadArtifact(ctx context.Context, gcsClient *storage.C
 // UploadResult uploads the provided deploy result to the Cloud Storage path where Cloud Deploy expects it.
 // Returns the Cloud Storage URI of the uploaded result.
 func (d *DeployRequest) UploadResult(ctx context.Context, gcsClient *storage.Client, deployResult *DeployResult) (string, error) {
-	uri := fmt.Sprintf("%s/%s", d.OutputGCSPath, resultObjectSuffix)
+	uri := fmt.Sprintf("%s/%s", d.OutputGCSPath, gcs.ResultObjectSuffix)
 	res, err := json.Marshal(deployResult)
 	if err != nil {
 		return "", fmt.Errorf("error marshalling deploy result: %v", err)
