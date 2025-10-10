@@ -1,5 +1,11 @@
-// Package cdenv contains Cloud Deploy environment variable keys.
+// Package cdenv contains Cloud Deploy environment variable keys and utility functions for environment
+// variables.
 package cdenv
+
+import (
+	"fmt"
+	"strings"
+)
 
 // Cloud Deploy environment variable keys.
 const (
@@ -30,3 +36,37 @@ const (
 	CloudBuildServiceAccount = "CLOUD_DEPLOY_WP_CB_ServiceAccount"
 	CloudBuildWorkerPool     = "CLOUD_DEPLOY_WP_CB_WorkerPool"
 )
+
+// CheckDuplicates expects environment variables in the k=v format. It
+// converts the environment string slice to a map and checks for duplicates
+// and malformed entries.
+func CheckDuplicates(environ []string) (map[string]string, error) {
+	envMap := make(map[string]string)
+
+	if len(environ) == 0 {
+		return nil, fmt.Errorf("no environment variables found")
+	}
+
+	for _, envVar := range environ {
+		pair := strings.SplitN(envVar, "=", 2)
+		if len(pair) != 2 {
+			return nil, fmt.Errorf("incorrect env variable format - expected k=v")
+		}
+
+		key := pair[0]
+		value := pair[1]
+		if key == "" {
+			return nil, fmt.Errorf("empty environment variable key")
+		}
+
+		if value == "" {
+			return nil, fmt.Errorf("empty environment variable value")
+		}
+
+		if _, exists := envMap[strings.ToLower(key)]; exists {
+			return nil, fmt.Errorf("duplicate environment variable key: %s", key)
+		}
+		envMap[strings.ToLower(key)] = value
+	}
+	return envMap, nil
+}
