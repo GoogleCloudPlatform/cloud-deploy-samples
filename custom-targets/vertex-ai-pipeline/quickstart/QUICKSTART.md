@@ -80,9 +80,9 @@ Enable the Cloud Deploy API, Compute Engine API, Artifact Registry API and Verte
 From the `quickstart` directory, run these commands to create a bucket in Cloud Storage for each of your targets:
 
 ```shell
-gsutil mb -l $STAGING_REGION -p $STAGING_PROJECT_ID gs://$STAGING_BUCKET_NAME 
+gcloud storage buckets create gs://$STAGING_BUCKET_NAME --location $STAGING_REGION --project $STAGING_PROJECT_ID
 
-gsutil mb -l $PROD_REGION -p $PROD_PROJECT_ID gs://$PROD_BUCKET_NAME
+gcloud storage buckets create gs://$PROD_BUCKET_NAME --location $PROD_REGION --project $PROD_PROJECT_ID
 
 ```
 

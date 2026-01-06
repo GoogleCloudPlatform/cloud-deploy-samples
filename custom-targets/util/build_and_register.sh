@@ -61,7 +61,7 @@ gcloud -q artifacts repositories add-iam-policy-binding \
     --role="roles/artifactregistry.reader" > /dev/null
 
 BUCKET_NAME="${PROJECT}-${REGION}-custom-targets"
-if ! gsutil ls "gs://${BUCKET_NAME}" > /dev/null 2>&1; then
+if ! gcloud storage ls "gs://${BUCKET_NAME}" > /dev/null 2>&1; then
   boldout "Creating a storage bucket to hold the custom target configuration"
   gcloud -q storage buckets create --project "${PROJECT}" --location "${REGION}" "gs://${BUCKET_NAME}"
 fi
@@ -98,7 +98,7 @@ customActions:
       - name: ${_CT_CUSTOM_ACTION_NAME}
         image: ${AR_REPO}/${_CT_IMAGE_NAME}@${IMAGE_SHA}
 EOF
-gsutil -q cp "${TMPDIR}/skaffold.yaml" "gs://${BUCKET_NAME}/${_CT_GCS_DIRECTORY}/skaffold.yaml"
+gcloud -q storage cp "${TMPDIR}/skaffold.yaml" "gs://${BUCKET_NAME}/${_CT_GCS_DIRECTORY}/skaffold.yaml"
 
 boldout "Create the CustomTargetType resource in Cloud Deploy"
 cat >"${TMPDIR}/clouddeploy.yaml" <<EOF
