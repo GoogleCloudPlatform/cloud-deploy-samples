@@ -1,5 +1,6 @@
 #!/bin/bash
 
+SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 export _CT_DOCKERFILE_LOCATION="custom-targets/helm/helm-deployer/Dockerfile"
 
 export _CT_IMAGE_NAME=helm

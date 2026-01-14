@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
 export _CT_DOCKERFILE_LOCATION="custom-targets/vertex-ai-pipeline/pipeline-deployer/Dockerfile"
 export _CT_IMAGE_NAME=vertexai
 export _CT_TYPE_NAME=vertex-ai-pipeline

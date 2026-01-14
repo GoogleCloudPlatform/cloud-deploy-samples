@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
 export _CT_DOCKERFILE_LOCATION="custom-targets/git-ops/git-deployer/Dockerfile"
 export _CT_IMAGE_NAME=git
 export _CT_TYPE_NAME=git
