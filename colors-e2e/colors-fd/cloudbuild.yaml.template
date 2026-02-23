@@ -1,5 +1,7 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
+  env:
+    - 'DOCKER_API_VERSION=1.41'
   script: |
     #!/bin/bash
     docker build -t $IMAGE_REPO/colors-frontdoor colors-fd

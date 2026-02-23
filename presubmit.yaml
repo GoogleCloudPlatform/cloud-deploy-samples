@@ -2,6 +2,8 @@
 # Using a machine with 8 CPUs to speed up the builds.
 steps:
   - name: docker
+    env:
+    - 'DOCKER_API_VERSION=1.41'
     script: |
       set -e
       # Find all directories that contain a file named `Dockerfile`
