@@ -1,0 +1,36 @@
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: my-pipeline
+serialPipeline:
+  stages:
+  - targetId: cr-prod
+    profiles: [prod]
+    strategy:
+      standard:
+        analysis:
+          # How long you want the analysis check to run for.
+          duration: 400s
+          customChecks:
+          # This can be any name you want - it shows up in the Cloud Deploy UI.
+          - id: datadog-check
+            # How often you want the analysis check to run.
+            frequency: 300s
+            task:
+              type: container
+              image: us-central1-docker.pkg.dev/my-project/my-repo/datadog:latest
+              env:
+                DatadogAPISecret: projects/123456/secrets/datadog-apikey/versions/1
+                DatadogAppSecret: projects/123456/secrets/datadog-appkey/versions/1
+                Query_fooapp: "@monitor_id:12345"
+                DatadogSite: https://us5.datadoghq.com
+    
+---
+
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: cr-prod
+description: Cloud Run production service for datadog testing
+run:
+  location: projects/my-project/locations/us-central1
