@@ -1,5 +1,4 @@
-// Package gcs provides utilities for uploading analysis results to GCS.
-package gcs
+package analysisutil
 
 import (
 	"context"

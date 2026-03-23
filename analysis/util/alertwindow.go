@@ -1,5 +1,5 @@
-// Package alertwindow provides utility functions for getting the alert time window.
-package alertwindow
+// Package analysisutil provides utility functions.
+package analysisutil
 
 import (
 	"context"
