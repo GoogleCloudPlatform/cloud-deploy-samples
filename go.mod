@@ -7,6 +7,7 @@ require (
 	cloud.google.com/go/monitoring v1.24.2
 	cloud.google.com/go/secretmanager v1.15.0
 	cloud.google.com/go/storage v1.55.0
+	github.com/DataDog/datadog-api-client-go/v2 v2.55.0
 	github.com/avast/retry-go/v4 v4.6.1
 	github.com/fsouza/fake-gcs-server v1.52.2
 	github.com/ghodss/yaml v1.0.0
@@ -32,7 +33,6 @@ require (
 	cloud.google.com/go/iam v1.5.2 // indirect
 	cloud.google.com/go/longrunning v0.6.7 // indirect
 	cloud.google.com/go/pubsub v1.49.0 // indirect
-	github.com/DataDog/datadog-api-client-go/v2 v2.55.0 // indirect
 	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.27.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.51.0 // indirect
@@ -54,6 +54,7 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
+	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
