@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG GO_VERSION=1.24
+ARG GO_VERSION=1.25
 
 FROM golang:${GO_VERSION} AS go-build
 ARG COMMIT_SHA=unknown

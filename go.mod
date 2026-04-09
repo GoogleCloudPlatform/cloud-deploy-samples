@@ -1,6 +1,6 @@
 module github.com/GoogleCloudPlatform/cloud-deploy-samples
 
-go 1.24.4
+go 1.25.9
 
 require (
 	cloud.google.com/go/config v1.4.0
