@@ -31,7 +31,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/mholt/archiver/v3"
-	"github.com/zclconf/go-cty/cty"
+	"google3/third_party/golang/github_com/zclconf/go_cty/v/v1/cty/cty"
 )
 
 const (
