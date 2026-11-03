@@ -155,6 +155,7 @@ func TestUploadGCS(t *testing.T) {
 	fakeContent := "hello world"
 	fakeObj := "obj"
 	fakeGCS := fakestorage.NewServer([]fakestorage.Object{})
+	t.Cleanup(fakeGCS.Stop)
 	fakeGCS.CreateBucketWithOpts(fakestorage.CreateBucketOpts{Name: bucket})
 
 	fakeContentForFile := "hellooo"
@@ -195,8 +196,6 @@ func TestUploadGCS(t *testing.T) {
 			if string(o.Content) != test.wantContent {
 				t.Errorf("uploadGCS failed with wrong content: got %q, want %q", o.Content, test.wantContent)
 			}
-
-			fakeGCS.Stop()
 		})
 	}
 
