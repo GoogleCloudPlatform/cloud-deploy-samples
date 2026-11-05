@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// render provides rendering logic for Terraform configurations in Cloud Deploy.
 package main
 
 import (
@@ -31,7 +32,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/mholt/archiver/v3"
-	"google3/third_party/golang/github_com/zclconf/go_cty/v/v1/cty/cty"
+	"github.com/zclconf/go-cty/cty"
 )
 
 const (

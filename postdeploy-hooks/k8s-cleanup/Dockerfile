@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-ARG GCLOUD_VERSION=506.0.0
+ARG GCLOUD_VERSION=588.0.0
 ARG GO_VERSION=1.24
 
 FROM golang:${GO_VERSION} AS build
